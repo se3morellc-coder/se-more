@@ -1,11 +1,20 @@
-export default async function handler(req, res) {
+async function handler(req, res) {
+  // CORS headers so browser fetch works
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
   if (!GROQ_API_KEY) {
-    return res.status(500).json({ error: 'GROQ_API_KEY not found in environment variables.' });
+    return res.status(500).json({ error: 'GROQ_API_KEY not configured in environment variables.' });
   }
 
   try {
@@ -31,7 +40,9 @@ export default async function handler(req, res) {
     const data = await response.json();
     return res.status(200).json(data);
   } catch (err) {
-    console.error('Error fetching from Groq API:', err);
+    console.error('Groq API error:', err);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
+module.exports = handler;

@@ -27,18 +27,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Phase 2: Pupils "look around" tracking cursor
         setTimeout(() => {
           eyeOverlay.classList.add('looking');
-        }, 900);
+        }, 600);
 
         // Phase 3: Natural blink
         setTimeout(() => {
           eyeOverlay.classList.add('blink');
-        }, 2200);
+        }, 1400);
 
         // Phase 4: Blink ends, pupils dilate, then cinematic zoom
         setTimeout(() => {
           eyeOverlay.classList.remove('blink');
           eyeOverlay.classList.add('dilate');
-        }, 2450);
+        }, 1600);
 
         setTimeout(() => {
           eyeOverlay.classList.add('expanding');
@@ -48,9 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
             loader.style.display = 'none';
             document.body.classList.add('page-ready');
             sessionStorage.setItem('semore-intro-played', '1');
-          }, 1800);
-        }, 2800);
-      }, 600);
+          }, 1200);
+        }, 1900);
+      }, 300);
     });
   }
 
@@ -353,6 +353,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ── Visionary Orbit 3D Physics ────────────
+  const orbitPacks = document.querySelectorAll('.founder-card');
+  orbitPacks.forEach(pack => {
+    const orbit = pack.querySelector('.orbit-container');
+    if (!orbit) return;
+
+    pack.addEventListener('mousemove', (e) => {
+      const rect = pack.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      // Calculate dramatic 3D angles
+      const rotateX = ((y - centerY) / centerY) * -35;
+      const rotateY = ((x - centerX) / centerX) * 35;
+
+      orbit.style.transform = `translate(-50%, -50%) perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      orbit.style.transition = 'transform 0.1s ease-out';
+    });
+
+    pack.addEventListener('mouseleave', () => {
+      orbit.style.transform = 'translate(-50%, -50%) perspective(1000px) rotateX(0deg) rotateY(0deg)';
+      orbit.style.transition = 'transform 1s cubic-bezier(0.23, 1, 0.32, 1)';
+    });
+  });
+
   // ── Magnetic Buttons ──────────────────────
   document.querySelectorAll('.btn, .cta-btn').forEach(btn => {
     btn.addEventListener('mousemove', (e) => {
@@ -524,7 +551,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Groq AI Chat Widget ───────────────────
-  const GROQ_URL = '/api/chat';
+  // API calls are proxied through /api/chat (Vercel serverless function)
+  // so the GROQ_API_KEY stays securely server-side only
 
   const SYSTEM_PROMPT = `You are the SE:MORE AI assistant embedded on the SE:MORE company website. You are knowledgeable, friendly, and concise. Answer questions about the company, its founders, services, location, process, and how it can help businesses.
 
@@ -706,11 +734,9 @@ INSTRUCTIONS FOR RESPONDING:
     addTypingIndicator();
 
     try {
-      const response = await fetch(GROQ_URL, {
+      const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: chatHistory,
@@ -721,9 +747,7 @@ INSTRUCTIONS FOR RESPONDING:
 
       removeTypingIndicator();
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
 
       const data = await response.json();
       const reply = data.choices[0].message.content;
