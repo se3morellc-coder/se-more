@@ -1765,7 +1765,14 @@ h1, h2, h3, h4, h5 {
    ============================================ */
 
 @media (pointer: fine) {
-  * { cursor: none !important; }
+  body.custom-cursor-enabled * { cursor: none !important; }
+}
+
+@media (pointer: coarse) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none !important;
+  }
 }
 
 .cursor-dot {
@@ -1830,7 +1837,7 @@ body.page-ready .cursor-ring { opacity: 1; }
   border-radius: 50%;
   background: var(--gradient-primary);
   border: none;
-  cursor: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2125,7 +2132,7 @@ body.page-ready .cursor-ring { opacity: 1; }
   font-family: 'Inter', sans-serif;
   font-size: 0.73rem;
   font-weight: 500;
-  cursor: none;
+  cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -2182,7 +2189,7 @@ body.page-ready .cursor-ring { opacity: 1; }
   border-radius: 50%;
   background: var(--gradient-primary);
   border: none;
-  cursor: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;

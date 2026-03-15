@@ -117,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Custom Cursor ─────────────────────────
   const cursorDot = document.getElementById('cursorDot');
   const cursorRing = document.getElementById('cursorRing');
+  const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+  const hasCustomCursor = hasFinePointer && !!cursorDot && !!cursorRing;
   let ringX = window.innerWidth / 2;
   let ringY = window.innerHeight / 2;
 
@@ -134,13 +136,18 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(animateCursor);
   }
 
-  if (cursorDot || cursorRing) {
+  if (hasCustomCursor) {
+    document.body.classList.add('custom-cursor-enabled');
     animateCursor();
     const hoverTargets = document.querySelectorAll('a, button, .service-card, .why-card, .founder-card, .result-card, [data-tilt]');
     hoverTargets.forEach(el => {
       el.addEventListener('mouseenter', () => cursorRing && cursorRing.classList.add('hovering'));
       el.addEventListener('mouseleave', () => cursorRing && cursorRing.classList.remove('hovering'));
     });
+  } else {
+    document.body.classList.remove('custom-cursor-enabled');
+    if (cursorDot) cursorDot.style.display = 'none';
+    if (cursorRing) cursorRing.style.display = 'none';
   }
 
   // ── Cursor-Tracking Eyes ──────────────────
