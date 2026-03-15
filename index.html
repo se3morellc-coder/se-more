@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SE:MORE — See More Possibilities In Your Business</title>
+  <meta name="description" content="SE:MORE helps businesses see more opportunities by using technology to improve existing operations. Automation, AI integration, and smart solutions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#" class="nav-logo">
+        <span class="logo-se">SE</span><span class="logo-colon"><span class="eye"><span class="pupil"></span></span><span class="eye"><span class="pupil"></span></span></span><span class="logo-more">MORE</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#why-us">Why Us</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="#contact" class="btn btn-primary btn-nav">Book a Consultation</a>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+    <div class="hero-bg">
+      <div class="grid-lines"></div>
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
+      <div class="floating-shape shape-4"></div>
+      <div class="scan-line"></div>
+      <div class="scan-line scan-line-2"></div>
+    </div>
+    <div class="container hero-content">
+      <div class="hero-badge">Technology Enablement</div>
+      <h1 class="hero-title">
+        <span class="hero-logo-line">
+          <span class="logo-se large">SE</span><span class="logo-colon large"><span class="eye"><span class="pupil"></span></span><span class="eye"><span class="pupil"></span></span></span><span class="logo-more large">MORE</span>
+        </span>
+      </h1>
+      <p class="hero-headline">See More <span class="typed-text" id="typedText"></span><span class="typed-cursor">|</span></p>
+      <p class="hero-sub">We help you uncover hidden opportunities and integrate technology that makes your business more efficient, more profitable, and more scalable.</p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn btn-primary btn-lg btn-glow">
+          <span>Book a Consultation</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#how-it-works" class="btn btn-ghost btn-lg">
+          <span>How We Work</span>
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number" data-target="150">0</span><span class="stat-plus">+</span>
+          <span class="stat-label">Businesses Helped</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number" data-target="35">0</span><span class="stat-percent">%</span>
+          <span class="stat-label">Avg Cost Reduction</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number" data-target="10">0</span><span class="stat-x">x</span>
+          <span class="stat-label">Faster Workflows</span>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <div class="mouse">
+        <div class="wheel"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="section about" id="about">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">About Us</span>
+        <h2 class="section-title">We Help You <span class="gradient-text">See Beyond</span> The Obvious</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-text">
+          <p class="about-lead">SE:MORE is a technology-enablement company built on a simple idea: <strong>we help businesses see more ways to grow, profit, and operate smarter through technology.</strong></p>
+          <p>The name <strong>SE:MORE</strong> uses the colon as two eyes — representing vision, clarity, and insight. Your business might already have tools, workflows, and data. We help reveal the hidden opportunities inside them.</p>
+          <p>We don't force new tools on you. We improve what's already there. We're translators of tech into business value — focused on clarity, not complexity. We create measurable profit wins, not just "digital transformation" buzzwords.</p>
+          <div class="about-values">
+            <div class="value-chip"><span class="colon-icon"></span>Vision</div>
+            <div class="value-chip"><span class="colon-icon"></span>Simplicity</div>
+            <div class="value-chip"><span class="colon-icon"></span>Insight</div>
+            <div class="value-chip"><span class="colon-icon"></span>Human-Centric Tech</div>
+          </div>
+        </div>
+        <div class="about-visual">
+          <div class="vision-graphic">
+            <div class="eye-scanner">
+              <div class="scanner-eye left">
+                <div class="iris"></div>
+              </div>
+              <div class="scanner-eye right">
+                <div class="iris"></div>
+              </div>
+            </div>
+            <div class="scanner-beam"></div>
+            <div class="data-points">
+              <span style="--delay: 0s; --x: 20%; --y: 30%;">Automate</span>
+              <span style="--delay: 0.5s; --x: 70%; --y: 20%;">Integrate</span>
+              <span style="--delay: 1s; --x: 40%; --y: 70%;">Optimize</span>
+              <span style="--delay: 1.5s; --x: 80%; --y: 60%;">Scale</span>
+              <span style="--delay: 2s; --x: 15%; --y: 80%;">Profit</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="section services" id="services">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">What We Do</span>
+        <h2 class="section-title">Technology That <span class="gradient-text">Works For You</span></h2>
+        <p class="section-sub">We partner with businesses to unlock growth through smart, simple technology solutions.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card" data-aos data-tilt>
+          <div class="card-shine"></div>
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>
+          </div>
+          <h3>Automate Manual Workflows</h3>
+          <p>Eliminate repetitive tasks and free your team to focus on high-value work. We build automations that save hours every week.</p>
+          <div class="service-hover-line"></div>
+        </div>
+        <div class="service-card" data-aos data-tilt>
+          <div class="card-shine"></div>
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"/><circle cx="12" cy="15" r="2"/></svg>
+          </div>
+          <h3>Integrate AI Into Existing Systems</h3>
+          <p>Embed intelligent AI capabilities into the platforms you already use — no rip-and-replace needed.</p>
+          <div class="service-hover-line"></div>
+        </div>
+        <div class="service-card" data-aos data-tilt>
+          <div class="card-shine"></div>
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+          </div>
+          <h3>Modernize Outdated Tools</h3>
+          <p>Upgrade legacy systems without the pain of starting from scratch. We bridge old and new seamlessly.</p>
+          <div class="service-hover-line"></div>
+        </div>
+        <div class="service-card" data-aos data-tilt>
+          <div class="card-shine"></div>
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+          </div>
+          <h3>Build Profitable Tech Solutions</h3>
+          <p>Simple, results-focused solutions designed to reduce costs and increase revenue from day one.</p>
+          <div class="service-hover-line"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Us Section -->
+  <section class="section why-us" id="why-us">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Why SE:MORE</span>
+        <h2 class="section-title">Built Different. <span class="gradient-text">By Design.</span></h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-number">01</div>
+          <h3>Insight-Driven Approach</h3>
+          <p>We don't guess. We analyze your operations, find inefficiencies, and build data-backed solutions.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-number">02</div>
+          <h3>Use What You Have</h3>
+          <p>We enhance your existing tools and systems instead of forcing expensive replacements.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-number">03</div>
+          <h3>Fast Implementation</h3>
+          <p>No 18-month timelines. We move fast, deliver in weeks, and iterate based on results.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-number">04</div>
+          <h3>Measurable Results</h3>
+          <p>Every engagement comes with clear KPIs. If it doesn't move the needle, we don't do it.</p>
+        </div>
+      </div>
+
+      <!-- Case-Style Cards -->
+      <div class="results-strip">
+        <div class="result-card">
+          <div class="result-metric">20 hrs</div>
+          <div class="result-text">Saved per week through workflow automation</div>
+        </div>
+        <div class="result-card">
+          <div class="result-metric">35%</div>
+          <div class="result-text">Reduction in customer support load via AI integration</div>
+        </div>
+        <div class="result-card">
+          <div class="result-metric">Zero</div>
+          <div class="result-text">Legacy systems replaced — streamlined without disruption</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="section how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">How It Works</span>
+        <h2 class="section-title">Three Steps To <span class="gradient-text">Seeing More</span></h2>
+      </div>
+      <div class="steps">
+        <div class="step" data-aos>
+          <div class="step-visual">
+            <div class="step-number">01</div>
+            <div class="step-icon-wrap">
+              <div class="step-eyes">
+                <span class="step-eye"></span>
+                <span class="step-eye"></span>
+              </div>
+            </div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">We See</div>
+            <h3>Discovery &amp; Clarity</h3>
+            <p>We audit your workflows, tools, and data. We identify bottlenecks, hidden costs, and untapped opportunities that are invisible from the inside.</p>
+          </div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step" data-aos>
+          <div class="step-visual">
+            <div class="step-number">02</div>
+            <div class="step-icon-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">We Simplify</div>
+            <h3>Strategy &amp; Solution Design</h3>
+            <p>We design clear, actionable roadmaps. No jargon, no fluff — just smart strategies tailored to your business reality.</p>
+          </div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step" data-aos>
+          <div class="step-visual">
+            <div class="step-number">03</div>
+            <div class="step-icon-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+          </div>
+          <div class="step-content">
+            <div class="step-label">You Scale</div>
+            <h3>Implementation &amp; Optimization</h3>
+            <p>We build, deploy, and optimize. You get measurable results — more efficiency, more revenue, more growth.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section contact" id="contact">
+    <div class="container">
+      <div class="contact-wrapper">
+        <div class="contact-info">
+          <span class="section-tag">Get In Touch</span>
+          <h2 class="section-title">Ready to <span class="gradient-text">See More?</span></h2>
+          <p>Book a free consultation and discover how technology can unlock hidden value in your business.</p>
+          <div class="contact-details">
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <span>hello@seemore.tech</span>
+            </div>
+            <div class="contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>New York, USA &amp; Remote Worldwide</span>
+            </div>
+          </div>
+          <div class="contact-socials">
+            <a href="#" class="social-link" aria-label="LinkedIn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            </a>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+            </a>
+          </div>
+        </div>
+        <form class="contact-form" id="contactForm">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" placeholder="John Doe" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="john@company.com" required>
+          </div>
+          <div class="form-group">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" placeholder="Your Company">
+          </div>
+          <div class="form-group">
+            <label for="message">How Can We Help?</label>
+            <textarea id="message" name="message" rows="4" placeholder="Tell us about your challenges..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-full">
+            <span>Send Message</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+          <div class="form-success" id="formSuccess">
+            <div class="success-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <p>Message sent! We'll get back to you soon.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo">
+            <span class="logo-se">SE</span><span class="logo-colon"><span class="eye"><span class="pupil"></span></span><span class="eye"><span class="pupil"></span></span></span><span class="logo-more">MORE</span>
+          </a>
+          <p>Helping businesses see more possibilities through smart technology.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>Company</h4>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#how-it-works">Process</a>
+            <a href="#contact">Contact</a>
+          </div>
+          <div class="footer-col">
+            <h4>Services</h4>
+            <a href="#services">Automation</a>
+            <a href="#services">AI Integration</a>
+            <a href="#services">Modernization</a>
+            <a href="#services">Consulting</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SE:MORE. All rights reserved.</p>
+        <div class="footer-legal">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
