@@ -1,6 +1,10 @@
 async function handler(req, res) {
-  // CORS headers so browser fetch works
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS headers — allow frontend on GitHub Pages
+  const allowedOrigins = ['https://semore.tech', 'https://www.semore.tech', 'https://se-more.github.io'];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 

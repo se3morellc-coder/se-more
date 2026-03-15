@@ -3,6 +3,9 @@
    Gulf Blue + British Racing Green Edition
    ============================================ */
 
+// API base URL — Vercel serverless backend
+const SEMORE_API_BASE = 'https://se-more.vercel.app';
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // ── Page Loader + Eye Zoom Intro ─────────
@@ -751,7 +754,7 @@ INSTRUCTIONS FOR RESPONDING:
     addTypingIndicator();
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${SEMORE_API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
