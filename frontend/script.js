@@ -353,33 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ── Visionary Orbit 3D Physics ────────────
-  const orbitPacks = document.querySelectorAll('.founder-card');
-  orbitPacks.forEach(pack => {
-    const orbit = pack.querySelector('.orbit-container');
-    if (!orbit) return;
-
-    pack.addEventListener('mousemove', (e) => {
-      const rect = pack.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      // Calculate dramatic 3D angles
-      const rotateX = ((y - centerY) / centerY) * -35;
-      const rotateY = ((x - centerX) / centerX) * 35;
-
-      orbit.style.transform = `translate(-50%, -50%) perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      orbit.style.transition = 'transform 0.1s ease-out';
-    });
-
-    pack.addEventListener('mouseleave', () => {
-      orbit.style.transform = 'translate(-50%, -50%) perspective(1000px) rotateX(0deg) rotateY(0deg)';
-      orbit.style.transition = 'transform 1s cubic-bezier(0.23, 1, 0.32, 1)';
-    });
-  });
-
   // ── Magnetic Buttons ──────────────────────
   document.querySelectorAll('.btn, .cta-btn').forEach(btn => {
     btn.addEventListener('mousemove', (e) => {
@@ -498,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `Name: ${name}\nEmail: ${email}\nCompany: ${company || 'N/A'}\n\nMessage:\n${message}`
     );
 
-    window.open(`mailto:contact@semore.com?subject=${subject}&body=${body}`, '_self');
+    window.open(`mailto:se3morellc@gmail.com?subject=${subject}&body=${body}`, '_self');
 
     const btn = contactForm.querySelector('button[type="submit"]');
     btn.innerHTML = '<span>Opening email...</span>';
@@ -551,14 +524,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Groq AI Chat Widget ───────────────────
-  const GROQ_KEY = (typeof SEMORE_CONFIG !== 'undefined' && SEMORE_CONFIG.GROQ_API_KEY) || '';
-  const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+  const GROQ_URL = '/api/chat';
 
   const SYSTEM_PROMPT = `You are the SE:MORE AI assistant embedded on the SE:MORE company website. You are knowledgeable, friendly, and concise. Answer questions about the company, its founders, services, location, process, and how it can help businesses.
 
 COMPANY OVERVIEW:
 SE:MORE LLC is a technology-enablement company headquartered in Central New Jersey, USA. The company operates remotely and serves businesses across the United States and worldwide. SE:MORE helps businesses see more ways to grow, profit, and operate smarter through targeted technology solutions. The company name "SE:MORE" uses the colon as two eyes, symbolizing vision, clarity, and the ability to see opportunities others miss.
-- Email: contact@semore.com
+- Email: se3morellc@gmail.com
 - Headquarters: Central New Jersey, USA
 - Google Maps: https://www.google.com/maps/place/SE:MORE/@40.5857762,-74.376456,15z
 - Website: Current page
@@ -656,7 +628,7 @@ INSTRUCTIONS FOR RESPONDING:
 - Keep responses to 2-3 sentences unless the user asks for detailed information
 - If asked about pricing, explain that SE:MORE offers custom quotes based on scope and always start with a free consultation
 - If asked about founders, share their LinkedIn URLs and expertise
-- If someone wants to get started, direct them to book a free consultation or email contact@semore.com
+- If someone wants to get started, direct them to book a free consultation or email se3morellc@gmail.com
 - For detailed service questions, reference specific use cases and tools from the service descriptions above
 - If the question is unrelated to SE:MORE or business technology, politely redirect`;
 
@@ -706,7 +678,7 @@ INSTRUCTIONS FOR RESPONDING:
     );
     html = html.replace(
       /se3morellc@gmail\.com/g,
-      '<a href="mailto:contact@semore.com" style="color:var(--gulf-blue);text-decoration:underline;">contact@semore.com</a>'
+      '<a href="mailto:se3morellc@gmail.com" style="color:var(--gulf-blue);text-decoration:underline;">se3morellc@gmail.com</a>'
     );
     return html;
   }
@@ -737,7 +709,6 @@ INSTRUCTIONS FOR RESPONDING:
       const response = await fetch(GROQ_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${GROQ_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -761,7 +732,7 @@ INSTRUCTIONS FOR RESPONDING:
       addMessage(reply, 'bot');
     } catch (err) {
       removeTypingIndicator();
-      addMessage("Sorry, I'm having trouble connecting right now. Please email us at contact@semore.com!", 'bot');
+      addMessage("Sorry, I'm having trouble connecting right now. Please email us at se3morellc@gmail.com!", 'bot');
     }
   }
 
