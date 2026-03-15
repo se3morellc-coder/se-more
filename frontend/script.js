@@ -81,18 +81,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('navLinks');
 
+  const setMobileMenuState = (isOpen) => {
+    hamburger.classList.toggle('active', isOpen);
+    navLinks.classList.toggle('mobile-open', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    document.body.classList.toggle('mobile-menu-open', isOpen);
+  };
+
   hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navLinks.classList.toggle('mobile-open');
-    document.body.style.overflow = navLinks.classList.contains('mobile-open') ? 'hidden' : '';
+    const isOpen = !navLinks.classList.contains('mobile-open');
+    setMobileMenuState(isOpen);
   });
 
   navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
-      hamburger.classList.remove('active');
-      navLinks.classList.remove('mobile-open');
-      document.body.style.overflow = '';
+      setMobileMenuState(false);
     });
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768 && navLinks.classList.contains('mobile-open')) {
+      setMobileMenuState(false);
+    }
   });
 
   // ── Global Cursor Tracking ────────────────

@@ -2919,15 +2919,25 @@ body.page-ready .cursor-ring { opacity: 1; }
     display: flex;
   }
 
+  body.mobile-menu-open .navbar {
+    background: var(--bg-primary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
   .nav-links.mobile-open {
     display: flex;
     flex-direction: column;
     position: fixed;
     inset: 0;
+    min-height: 100dvh;
     background: var(--bg-primary);
+    background-color: var(--bg-primary);
+    opacity: 1;
     z-index: 1000;
     padding: 100px 32px 32px;
     gap: 24px;
+    overflow-y: auto;
     animation: fadeInUp 0.3s ease;
   }
 
