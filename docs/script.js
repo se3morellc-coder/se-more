@@ -3,10 +3,20 @@
    Gulf Blue + British Racing Green Edition
    ============================================ */
 
-// Use the local backend in development and the deployed backend elsewhere.
-const SEMORE_API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-  ? window.location.origin
-  : 'https://se-more.vercel.app';
+// Use a configured backend when available, the local server in development,
+// and a local knowledge fallback everywhere else.
+const SEMORE_API_BASE = (() => {
+  const configuredBase = window.SEMORE_CONFIG?.apiBase || window.SEMORE_CONFIG?.API_BASE || '';
+  if (configuredBase) {
+    return configuredBase.replace(/\/$/, '');
+  }
+
+  if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    return window.location.origin;
+  }
+
+  return '';
+})();
 
 document.addEventListener('DOMContentLoaded', () => {
   const escapeHtml = (text) => text
@@ -590,8 +600,52 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Groq AI Chat Widget ───────────────────
-  // API calls are proxied through /api/chat (Vercel serverless function)
-  // so the GROQ_API_KEY stays securely server-side only
+  // API calls are proxied through /api/chat when a backend is configured.
+  // If no backend is available, the site falls back to a local sales assistant
+  // so the chat still works for demos and common client questions.
+
+  const LOCAL_ASSISTANT_RESPONSES = [
+    {
+      keywords: ['service', 'services', 'offer', 'help', 'do you do'],
+      reply: 'SE:MORE focuses on four core offers: workflow automation, AI integration, system modernization, and technology consulting. If you want, I can break down which one fits your business based on your biggest bottleneck.'
+    },
+    {
+      keywords: ['automation', 'manual', 'repetitive', 'copy', 'busywork'],
+      reply: 'Workflow automation is ideal when your team is spending hours on invoices, CRM updates, report generation, approvals, or repetitive follow-ups. SE:MORE usually starts by mapping the highest-friction workflow, then automates the handoffs so your team gets time back immediately.'
+    },
+    {
+      keywords: ['ai', 'chatbot', 'assistant', 'support', 'documents'],
+      reply: 'AI integration is best when you want faster support, smarter document handling, internal search, or data-driven recommendations without replacing your existing stack. SE:MORE can embed AI into the tools you already use and measure the impact against clear KPIs.'
+    },
+    {
+      keywords: ['legacy', 'modernize', 'modernization', 'old system', 'outdated'],
+      reply: 'System modernization is for businesses stuck with fragile spreadsheets, legacy databases, desktop tools, or systems that do not talk to each other. SE:MORE upgrades what is slowing you down without forcing a risky rip-and-replace project.'
+    },
+    {
+      keywords: ['consulting', 'roadmap', 'strategy', 'advice', 'plan'],
+      reply: 'Technology consulting is the right fit when you need clarity before you build. SE:MORE helps with audits, build-vs-buy decisions, architecture reviews, vendor selection, and practical technology roadmaps tied to ROI.'
+    },
+    {
+      keywords: ['process', 'how it works', 'how do you work'],
+      reply: 'SE:MORE follows a simple three-step model: We See, We Simplify, You Scale. That means discovery first, then a clear solution design, then implementation and optimization with measurable business outcomes.'
+    },
+    {
+      keywords: ['pricing', 'cost', 'quote', 'how much'],
+      reply: 'SE:MORE does custom pricing based on scope, complexity, and expected impact. The normal starting point is a free consultation so the team can understand the workflow, estimate ROI, and recommend the right engagement shape.'
+    },
+    {
+      keywords: ['founder', 'founders', 'mohit', 'hitayu', 'team'],
+      reply: 'SE:MORE was founded by Mohit Unecha and Hitayu Parikh. Mohit focuses on software engineering, AI integration, and product development, while Hitayu brings strength in technology strategy, operations, and scalable systems.'
+    },
+    {
+      keywords: ['contact', 'email', 'book', 'consultation', 'get started'],
+      reply: 'The fastest way to get started is to book a consultation or email contact@semore.com. If you tell me your biggest bottleneck, I can also suggest which SE:MORE service to lead with in that conversation.'
+    },
+    {
+      keywords: ['location', 'where', 'new jersey'],
+      reply: 'SE:MORE is based in Central New Jersey and works remotely with businesses across the United States and beyond. The team can support strategy, implementation, and optimization without requiring a local-only footprint.'
+    }
+  ];
 
   const SYSTEM_PROMPT = `You are the SE:MORE AI assistant embedded on the SE:MORE company website. You are knowledgeable, friendly, and concise. Answer questions about the company, its founders, services, location, process, and how it can help businesses.
 
@@ -791,6 +845,48 @@ INSTRUCTIONS FOR RESPONDING:
     });
   }
 
+  function generateLocalAssistantReply(userMessage) {
+    const normalized = userMessage.toLowerCase();
+    const matchedResponse = LOCAL_ASSISTANT_RESPONSES.find(({ keywords }) =>
+      keywords.some(keyword => normalized.includes(keyword))
+    );
+
+    if (matchedResponse) {
+      return matchedResponse.reply;
+    }
+
+    return 'SE:MORE helps businesses grow through workflow automation, AI integration, system modernization, and practical consulting. Tell me the biggest bottleneck in your business and I’ll point you to the best-fit service and next step.';
+  }
+
+  async function getAssistantReply(userMessage) {
+    if (!SEMORE_API_BASE) {
+      return generateLocalAssistantReply(userMessage);
+    }
+
+    const response = await fetch(`${SEMORE_API_BASE}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: chatHistory,
+        max_tokens: 300,
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content;
+    if (!reply) {
+      throw new Error('Malformed chat response');
+    }
+
+    return reply;
+  }
+
   async function sendToGroq(userMessage) {
     if (isSendingChat) {
       return;
@@ -802,32 +898,17 @@ INSTRUCTIONS FOR RESPONDING:
     addTypingIndicator();
 
     try {
-      const response = await fetch(`${SEMORE_API_BASE}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: chatHistory,
-          max_tokens: 300,
-          temperature: 0.7
-        })
-      });
+      const reply = await getAssistantReply(userMessage);
 
       removeTypingIndicator();
-
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
-
-      const data = await response.json();
-      const reply = data.choices?.[0]?.message?.content;
-      if (!reply) {
-        throw new Error('Malformed chat response');
-      }
 
       chatHistory.push({ role: 'assistant', content: reply });
       addMessage(reply, 'bot');
     } catch (err) {
       removeTypingIndicator();
-      addMessage("Sorry, I'm having trouble connecting right now. Please email us at contact@semore.com!", 'bot');
+      const fallbackReply = generateLocalAssistantReply(userMessage);
+      chatHistory.push({ role: 'assistant', content: fallbackReply });
+      addMessage(fallbackReply, 'bot');
     } finally {
       setChatPendingState(false);
       chatInput?.focus();
@@ -859,6 +940,145 @@ INSTRUCTIONS FOR RESPONDING:
       sendToGroq(msg);
     });
   });
+
+  // ── Opportunity Scanner ───────────────────
+  const scannerSignals = {
+    manual: {
+      title: 'Workflow Automation',
+      text: 'Best when a team is burning hours on repetitive admin, reporting, approvals, and operational follow-ups.',
+      impact: '20+ hours back each week',
+      action: 'Map one high-friction workflow and automate the handoffs',
+      prompt: 'A client says their team spends too much time on repetitive manual work. How would SE:MORE help?'
+    },
+    support: {
+      title: 'AI Integration',
+      text: 'Best when support queues, document review, or internal knowledge access are slowing down the business.',
+      impact: '35% lighter support load',
+      action: 'Deploy an AI assistant or document workflow inside the existing stack',
+      prompt: 'A client says their support team is overloaded. How would SE:MORE use AI to help?'
+    },
+    legacy: {
+      title: 'System Modernization',
+      text: 'Best when old tools, spreadsheets, or fragile legacy systems are limiting growth and visibility.',
+      impact: 'Modernize without rip-and-replace risk',
+      action: 'Bridge the legacy system, then phase the new architecture in safely',
+      prompt: 'A client is stuck on legacy systems. How would SE:MORE modernize them without disruption?'
+    },
+    visibility: {
+      title: 'Workflow Automation + Reporting',
+      text: 'Best when leadership cannot see pipeline health, operations performance, or financial reporting in real time.',
+      impact: 'Real-time dashboards instead of delayed reports',
+      action: 'Automate data collection and push it into a live reporting layer',
+      prompt: 'A client has poor reporting visibility. What would SE:MORE recommend first?'
+    },
+    handoffs: {
+      title: 'Automation + Integration',
+      text: 'Best when sales, ops, finance, and support are losing time because information dies between teams.',
+      impact: 'Cleaner handoffs and fewer dropped tasks',
+      action: 'Connect the systems and automate status movement between them',
+      prompt: 'A client has broken cross-team handoffs. How would SE:MORE fix that?'
+    },
+    strategy: {
+      title: 'Technology Consulting',
+      text: 'Best when the business needs a clear roadmap before spending money on tools, vendors, or custom builds.',
+      impact: 'A prioritized roadmap tied to ROI',
+      action: 'Run an audit, rank the opportunities, then sequence execution',
+      prompt: 'A client needs a technology roadmap. What does a SE:MORE consulting engagement look like?'
+    }
+  };
+
+  const signalChipGrid = document.getElementById('signalChipGrid');
+  const recommendationTitle = document.getElementById('recommendationTitle');
+  const recommendationText = document.getElementById('recommendationText');
+  const recommendationImpact = document.getElementById('recommendationImpact');
+  const recommendationAction = document.getElementById('recommendationAction');
+  const askRecommendationBtn = document.getElementById('askRecommendationBtn');
+  let currentRecommendationPrompt = scannerSignals.manual.prompt;
+
+  function applyRecommendation(signalKey) {
+    const recommendation = scannerSignals[signalKey];
+    if (!recommendation) {
+      return;
+    }
+
+    recommendationTitle.textContent = recommendation.title;
+    recommendationText.textContent = recommendation.text;
+    recommendationImpact.textContent = recommendation.impact;
+    recommendationAction.textContent = recommendation.action;
+    currentRecommendationPrompt = recommendation.prompt;
+  }
+
+  if (signalChipGrid) {
+    signalChipGrid.querySelectorAll('.signal-chip').forEach(button => {
+      button.addEventListener('click', () => {
+        signalChipGrid.querySelectorAll('.signal-chip').forEach(chip => chip.classList.remove('active'));
+        button.classList.add('active');
+        applyRecommendation(button.dataset.signal);
+      });
+    });
+  }
+
+  if (askRecommendationBtn) {
+    askRecommendationBtn.addEventListener('click', () => {
+      chatWidget.classList.add('open');
+      chatToggle.setAttribute('aria-expanded', 'true');
+      hideQuickReplies();
+      addMessage(currentRecommendationPrompt, 'user');
+      sendToGroq(currentRecommendationPrompt);
+      chatInput.focus();
+    });
+  }
+
+  // ── ROI Calculator ────────────────────────
+  const roiInputs = {
+    employees: document.getElementById('roiEmployees'),
+    hours: document.getElementById('roiHours'),
+    rate: document.getElementById('roiRate'),
+    recovery: document.getElementById('roiRecovery')
+  };
+  const roiOutputs = {
+    employeesValue: document.getElementById('roiEmployeesValue'),
+    hoursValue: document.getElementById('roiHoursValue'),
+    rateValue: document.getElementById('roiRateValue'),
+    recoveryValue: document.getElementById('roiRecoveryValue'),
+    monthlyHours: document.getElementById('roiMonthlyHours'),
+    annualValue: document.getElementById('roiAnnualValue'),
+    quarterValue: document.getElementById('roiQuarterValue'),
+    summaryText: document.getElementById('roiSummaryText')
+  };
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+  }
+
+  function updateRoiCalculator() {
+    if (!roiInputs.employees || !roiOutputs.employeesValue) {
+      return;
+    }
+
+    const employees = Number(roiInputs.employees.value);
+    const hours = Number(roiInputs.hours.value);
+    const rate = Number(roiInputs.rate.value);
+    const recovery = Number(roiInputs.recovery.value) / 100;
+
+    const monthlyHoursRecovered = employees * hours * 4 * recovery;
+    const annualValue = monthlyHoursRecovered * rate * 12;
+    const quarterValue = annualValue / 4;
+
+    roiOutputs.employeesValue.textContent = `${employees} ${employees === 1 ? 'person' : 'people'}`;
+    roiOutputs.hoursValue.textContent = `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    roiOutputs.rateValue.textContent = `${formatCurrency(rate)}/hr`;
+    roiOutputs.recoveryValue.textContent = `${Math.round(recovery * 100)}%`;
+    roiOutputs.monthlyHours.textContent = Math.round(monthlyHoursRecovered).toString();
+    roiOutputs.annualValue.textContent = formatCurrency(annualValue);
+    roiOutputs.quarterValue.textContent = formatCurrency(quarterValue);
+    roiOutputs.summaryText.textContent = `This process is likely burning about ${formatCurrency(quarterValue)} every quarter. That gives SE:MORE a strong business case to automate the workflow, improve visibility, or layer AI into the team’s process.`;
+  }
+
+  Object.values(roiInputs).forEach(input => {
+    input?.addEventListener('input', updateRoiCalculator);
+  });
+  updateRoiCalculator();
 
   // ── Back to Top Button ────────────────────
   const backToTop = document.getElementById('backToTop');

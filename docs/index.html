@@ -309,6 +309,100 @@
     </div>
   </section>
 
+  <section class="section opportunity-lab" id="opportunity-lab">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Instant Opportunity Scan</span>
+        <h2 class="section-title">Show Clients <span class="gradient-text">Exactly Where Tech Pays Off</span></h2>
+        <p class="section-sub">Pick the friction points a prospect is dealing with and SE:MORE turns them into a recommended service path in real time.</p>
+      </div>
+      <div class="opportunity-lab-grid">
+        <div class="opportunity-panel">
+          <div class="opportunity-panel-label">Common pain points</div>
+          <div class="signal-chip-grid" id="signalChipGrid">
+            <button class="signal-chip active" type="button" data-signal="manual">Too much manual work</button>
+            <button class="signal-chip" type="button" data-signal="support">Support team overloaded</button>
+            <button class="signal-chip" type="button" data-signal="legacy">Legacy systems slowing growth</button>
+            <button class="signal-chip" type="button" data-signal="visibility">No clear reporting visibility</button>
+            <button class="signal-chip" type="button" data-signal="handoffs">Broken cross-team handoffs</button>
+            <button class="signal-chip" type="button" data-signal="strategy">Need a tech roadmap</button>
+          </div>
+        </div>
+        <div class="opportunity-recommendation" id="opportunityRecommendation">
+          <div class="recommendation-kicker">Recommended path</div>
+          <h3 id="recommendationTitle">Workflow Automation</h3>
+          <p id="recommendationText">Best when a team is burning hours on repetitive admin, copy-paste work, approvals, reporting, or operational follow-ups.</p>
+          <div class="recommendation-proof">
+            <div>
+              <span>Impact</span>
+              <strong id="recommendationImpact">20+ hours back each week</strong>
+            </div>
+            <div>
+              <span>First move</span>
+              <strong id="recommendationAction">Map one high-friction workflow and automate the handoffs</strong>
+            </div>
+          </div>
+          <div class="recommendation-actions">
+            <button class="btn btn-primary" type="button" id="askRecommendationBtn">Ask The AI About This</button>
+            <a href="#contact" class="btn btn-ghost">Turn This Into A Proposal</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section roi-section" id="roi-calculator">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">ROI Calculator</span>
+        <h2 class="section-title">Turn A Prospect’s Friction Into <span class="gradient-text">A Dollar Figure</span></h2>
+        <p class="section-sub">Use this live during calls to show what repetitive work, slow support, and delayed reporting are actually costing every month.</p>
+      </div>
+      <div class="roi-grid">
+        <div class="roi-controls">
+          <label class="roi-control">
+            <span>People touching the process</span>
+            <input type="range" id="roiEmployees" min="1" max="50" value="8">
+            <strong id="roiEmployeesValue">8 people</strong>
+          </label>
+          <label class="roi-control">
+            <span>Hours lost per person each week</span>
+            <input type="range" id="roiHours" min="1" max="20" value="6">
+            <strong id="roiHoursValue">6 hours</strong>
+          </label>
+          <label class="roi-control">
+            <span>Fully loaded hourly cost</span>
+            <input type="range" id="roiRate" min="20" max="150" step="5" value="55">
+            <strong id="roiRateValue">$55/hr</strong>
+          </label>
+          <label class="roi-control">
+            <span>Efficiency recovered with SE:MORE</span>
+            <input type="range" id="roiRecovery" min="10" max="95" value="65">
+            <strong id="roiRecoveryValue">65%</strong>
+          </label>
+        </div>
+        <div class="roi-results" id="roiResults">
+          <div class="roi-card">
+            <span class="roi-label">Hours recovered / month</span>
+            <strong id="roiMonthlyHours">125</strong>
+          </div>
+          <div class="roi-card">
+            <span class="roi-label">Annual labor value unlocked</span>
+            <strong id="roiAnnualValue">$82,500</strong>
+          </div>
+          <div class="roi-card">
+            <span class="roi-label">90-day opportunity</span>
+            <strong id="roiQuarterValue">$20,625</strong>
+          </div>
+          <div class="roi-summary">
+            <div class="roi-summary-label">Talk track</div>
+            <p id="roiSummaryText">This process is likely burning more than $20,000 per quarter. That gives SE:MORE a clean wedge for automation, reporting, or AI augmentation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Why Us Section -->
   <section class="section why-us" id="why-us">
     <div class="container">
