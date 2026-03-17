@@ -527,6 +527,65 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Contact Form — mailto ──────────────────
   const contactForm = document.getElementById('contactForm');
   const formSuccess = document.getElementById('formSuccess');
+  const bookingPathGrid = document.getElementById('bookingPathGrid');
+  const servicePathInput = document.getElementById('servicePath');
+  const bookingRouteTitle = document.getElementById('bookingRouteTitle');
+  const bookingRouteText = document.getElementById('bookingRouteText');
+  const timelineInput = document.getElementById('timeline');
+
+  const bookingRoutes = {
+    automation: {
+      title: 'Automation Discovery Call',
+      text: 'Best for businesses losing time to repetitive admin, manual reporting, disconnected approvals, or operational copy-paste work.',
+      subject: 'Automation Discovery Call',
+      intro: 'We want to streamline repetitive workflows and remove manual operational work.'
+    },
+    ai: {
+      title: 'AI Integration Strategy Call',
+      text: 'Best for teams that need AI copilots, support deflection, document understanding, internal search, or smarter recommendations.',
+      subject: 'AI Integration Strategy Call',
+      intro: 'We want to explore practical AI use cases inside our existing systems.'
+    },
+    modernization: {
+      title: 'System Modernization Call',
+      text: 'Best for businesses held back by legacy software, spreadsheets, outdated tooling, or disconnected internal systems.',
+      subject: 'System Modernization Call',
+      intro: 'We need to modernize legacy systems without disrupting the business.'
+    },
+    strategy: {
+      title: 'Technology Roadmap Call',
+      text: 'Best when you need an objective roadmap before committing to vendors, tools, architecture, or custom development.',
+      subject: 'Technology Roadmap Call',
+      intro: 'We need strategic guidance on where to invest in technology next.'
+    }
+  };
+
+  function applyBookingRoute(routeKey) {
+    const route = bookingRoutes[routeKey];
+    if (!route) {
+      return;
+    }
+
+    if (servicePathInput) {
+      servicePathInput.value = routeKey;
+    }
+    if (bookingRouteTitle) {
+      bookingRouteTitle.textContent = route.title;
+    }
+    if (bookingRouteText) {
+      bookingRouteText.textContent = route.text;
+    }
+  }
+
+  if (bookingPathGrid) {
+    bookingPathGrid.querySelectorAll('.booking-path').forEach(button => {
+      button.addEventListener('click', () => {
+        bookingPathGrid.querySelectorAll('.booking-path').forEach(path => path.classList.remove('active'));
+        button.classList.add('active');
+        applyBookingRoute(button.dataset.path);
+      });
+    });
+  }
 
   if (contactForm && formSuccess) {
     contactForm.addEventListener('submit', (e) => {
@@ -536,10 +595,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = contactForm.querySelector('#email')?.value || '';
       const company = contactForm.querySelector('#company')?.value || '';
       const message = contactForm.querySelector('#message')?.value || '';
+      const selectedRouteKey = servicePathInput?.value || 'automation';
+      const selectedRoute = bookingRoutes[selectedRouteKey] || bookingRoutes.automation;
+      const timeline = timelineInput?.value || 'Not specified';
 
-      const subject = encodeURIComponent(`New Inquiry from ${name} — ${company || 'N/A'}`);
+      const subject = encodeURIComponent(`${selectedRoute.subject} — ${name} — ${company || 'N/A'}`);
       const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nCompany: ${company || 'N/A'}\n\nMessage:\n${message}`
+        `Consultation Type: ${selectedRoute.title}\nName: ${name}\nEmail: ${email}\nCompany: ${company || 'N/A'}\nDesired Timeline: ${timeline}\n\nWhy we are reaching out:\n${selectedRoute.intro}\n\nCurrent bottleneck:\n${message}\n\nNext step requested:\nPlease route us to the best SE:MORE consultation path for this need.`
       );
 
       window.open(`mailto:contact@semore.com?subject=${subject}&body=${body}`, '_self');

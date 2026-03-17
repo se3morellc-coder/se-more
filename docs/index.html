@@ -120,38 +120,6 @@
           <span class="stat-label">Faster Workflows</span>
         </div>
       </div>
-      <div class="hero-intel-board" aria-label="SE:MORE operating model">
-        <div class="hero-intel-card hero-intel-card-primary">
-          <span class="hero-intel-eyes" aria-hidden="true">
-            <span></span>
-            <span></span>
-          </span>
-          <div class="hero-intel-label">Signal Audit</div>
-          <h3>See the drag before you buy more software.</h3>
-          <p>We map wasted motion, manual loops, and hidden bottlenecks before we recommend a single tool.</p>
-        </div>
-        <div class="hero-intel-card">
-          <div class="hero-intel-label">System Maps</div>
-          <ul class="hero-intel-list">
-            <li><span>Ops</span><strong>Automation runway</strong></li>
-            <li><span>AI</span><strong>High-trust use cases</strong></li>
-            <li><span>Stack</span><strong>Modernize without ripping out</strong></li>
-          </ul>
-        </div>
-        <div class="hero-intel-card hero-intel-card-scan">
-          <div class="hero-intel-label">Live Focus</div>
-          <div class="hero-scan-grid" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <div class="hero-intel-readout">
-            <div><span>Workflow friction</span><strong>Detected</strong></div>
-            <div><span>Execution path</span><strong>Scoped in weeks</strong></div>
-          </div>
-        </div>
-      </div>
     </div>
     <div class="scroll-indicator">
       <div class="mouse">
@@ -539,7 +507,39 @@
             Leave us a Google Review
           </a>
         </div>
-        <form class="contact-form" id="contactForm">
+        <form class="contact-form booking-funnel" id="contactForm">
+          <div class="booking-funnel-head">
+            <span class="section-tag">Smart Booking Funnel</span>
+            <h3>Choose the path that fits your bottleneck</h3>
+            <p>We route the conversation differently depending on whether you need automation, AI, modernization, or strategic guidance.</p>
+          </div>
+          <div class="booking-path-grid" id="bookingPathGrid">
+            <button class="booking-path active" type="button" data-path="automation">
+              <span class="booking-path-kicker">Automation</span>
+              <strong>Eliminate repetitive work</strong>
+              <small>For manual workflows, reporting, and handoff friction.</small>
+            </button>
+            <button class="booking-path" type="button" data-path="ai">
+              <span class="booking-path-kicker">AI Integration</span>
+              <strong>Add intelligence to existing systems</strong>
+              <small>For support load, document workflows, and internal search.</small>
+            </button>
+            <button class="booking-path" type="button" data-path="modernization">
+              <span class="booking-path-kicker">Modernization</span>
+              <strong>Upgrade without ripping out</strong>
+              <small>For legacy tools, spreadsheets, and brittle systems.</small>
+            </button>
+            <button class="booking-path" type="button" data-path="strategy">
+              <span class="booking-path-kicker">Strategy</span>
+              <strong>Get a roadmap before spending</strong>
+              <small>For audits, architecture, vendor choices, and sequencing.</small>
+            </button>
+          </div>
+          <div class="booking-route-summary" id="bookingRouteSummary">
+            <div class="booking-route-label">Current route</div>
+            <h4 id="bookingRouteTitle">Automation Discovery Call</h4>
+            <p id="bookingRouteText">Best for businesses losing time to repetitive admin, manual reporting, disconnected approvals, or operational copy-paste work.</p>
+          </div>
           <div class="form-group">
             <label for="name">Full Name</label>
             <input type="text" id="name" name="name" placeholder="John Doe" required>
@@ -553,18 +553,28 @@
             <input type="text" id="company" name="company" placeholder="Your Company">
           </div>
           <div class="form-group">
-            <label for="message">How Can We Help?</label>
-            <textarea id="message" name="message" rows="4" placeholder="Tell us about your challenges..." required></textarea>
+            <label for="message">What’s the bottleneck?</label>
+            <textarea id="message" name="message" rows="4" placeholder="Tell us what is slowing the business down right now..." required></textarea>
           </div>
+          <div class="form-group">
+            <label for="timeline">Desired Timeline</label>
+            <select id="timeline" name="timeline">
+              <option value="ASAP">As soon as possible</option>
+              <option value="30 days">Within 30 days</option>
+              <option value="This quarter">This quarter</option>
+              <option value="Exploring">Just exploring options</option>
+            </select>
+          </div>
+          <input type="hidden" id="servicePath" name="servicePath" value="automation">
           <button type="submit" class="btn btn-primary btn-lg btn-full">
-            <span>Send Message</span>
+            <span>Book The Right Consultation</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
           <div class="form-success" id="formSuccess">
             <div class="success-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <p>Message sent! We'll get back to you soon.</p>
+            <p>Your consultation draft is ready. Send it and we’ll route it to the right SE:MORE conversation.</p>
           </div>
         </form>
       </div>
