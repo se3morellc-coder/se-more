@@ -18,7 +18,23 @@ const SEMORE_API_BASE = (() => {
   return '';
 })();
 
-const SEMORE_IS_LOCALHOST = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const SEMORE_FALLBACK_EMAIL = 'contact@semore.tech';
+const SEMORE_FORMSUBMIT_ENDPOINT = `https://formsubmit.co/ajax/${SEMORE_FALLBACK_EMAIL}`;
+const SEMORE_CONFIGURED_CONTACT_ENDPOINT = (
+  window.SEMORE_CONFIG?.contactEndpoint || window.SEMORE_CONFIG?.CONTACT_ENDPOINT || ''
+).trim();
+const SEMORE_CONTACT_ENDPOINT = (() => {
+  if (SEMORE_CONFIGURED_CONTACT_ENDPOINT) {
+    return SEMORE_CONFIGURED_CONTACT_ENDPOINT.replace(/\/$/, '');
+  }
+
+  if (SEMORE_API_BASE) {
+    return `${SEMORE_API_BASE}/api/contact`;
+  }
+
+  return SEMORE_FORMSUBMIT_ENDPOINT;
+})();
+const isFormSubmitEndpoint = (endpoint = '') => /formsubmit\.co\/ajax\//i.test(endpoint);
 
 document.addEventListener('DOMContentLoaded', () => {
   const escapeHtml = (text) => text
@@ -27,40 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-
-  const getRecaptchaToken = async (siteKey) => {
-    if (!siteKey) {
-      if (SEMORE_IS_LOCALHOST) {
-        return '';
-      }
-
-      throw new Error('reCAPTCHA site key is missing.');
-    }
-
-    if (typeof window.grecaptcha === 'undefined') {
-      if (SEMORE_IS_LOCALHOST) {
-        return '';
-      }
-
-      throw new Error('Spam protection is still loading. Please wait a second and try again.');
-    }
-
-    return new Promise((resolve, reject) => {
-      window.grecaptcha.ready(() => {
-        window.grecaptcha
-          .execute(siteKey, { action: 'contact_form' })
-          .then(resolve)
-          .catch(() => {
-            if (SEMORE_IS_LOCALHOST) {
-              resolve('');
-              return;
-            }
-
-            reject(new Error('Spam protection could not be verified. Please try again.'));
-          });
-      });
-    });
-  };
 
   // ── Page Loader + Eye Zoom Intro ─────────
   const loader = document.getElementById('pageLoader');
@@ -695,11 +677,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const formStatus = document.getElementById('formStatus');
 
   if (contactForm && formSuccess) {
-    const recaptchaSiteKey = contactForm.dataset.recaptchaSiteKey || '';
     const formStartedAtField = contactForm.querySelector('#formStartedAt');
     if (formStartedAtField) {
       formStartedAtField.value = String(Date.now());
     }
+
+    const parseJson = async (response) => response.json().catch(() => ({}));
+    const sendToApi = async (endpoint, body) => {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      const payload = await parseJson(response);
+
+      if (!response.ok) {
+        const error = new Error(payload.error || payload.message || 'Failed to send message.');
+        error.status = response.status;
+        throw error;
+      }
+    };
+    const sendToFormSubmit = async (endpoint, body) => {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      const payload = await parseJson(response);
+      const success = payload.success === true || String(payload.success).toLowerCase() === 'true';
+
+      if (!response.ok || !success) {
+        const error = new Error(payload.message || 'Failed to send message.');
+        error.status = response.status;
+        throw error;
+      }
+    };
+    const buildMailtoHref = ({ name, email, company, messageText }) => {
+      const subject = encodeURIComponent(`New SE:MORE inquiry from ${name || 'Website Visitor'}`);
+      const body = encodeURIComponent([
+        `Name: ${name || 'N/A'}`,
+        `Email: ${email || 'N/A'}`,
+        `Company: ${company || 'N/A'}`,
+        '',
+        'Message:',
+        messageText || ''
+      ].join('\n'));
+      return `mailto:${SEMORE_FALLBACK_EMAIL}?subject=${subject}&body=${body}`;
+    };
 
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -707,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = contactForm.querySelector('#name')?.value || '';
       const email = contactForm.querySelector('#email')?.value || '';
       const company = contactForm.querySelector('#company')?.value || '';
-      const message = contactForm.querySelector('#message')?.value || '';
+      const messageText = contactForm.querySelector('#message')?.value || '';
       const website = contactForm.querySelector('#website')?.value || '';
       const formStartedAt = contactForm.querySelector('#formStartedAt')?.value || '';
 
@@ -728,27 +757,37 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
 
       try {
-        const recaptchaToken = await getRecaptchaToken(recaptchaSiteKey);
-        const response = await fetch(`${SEMORE_API_BASE}/api/contact`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            company,
-            message,
-            website,
-            formStartedAt,
-            recaptchaToken
-          })
-        });
+        const apiPayload = {
+          name,
+          email,
+          company,
+          message: messageText,
+          website,
+          formStartedAt
+        };
+        const formSubmitPayload = {
+          name,
+          email,
+          company,
+          message: messageText,
+          _subject: `New SE:MORE contact form submission from ${name || 'Website Visitor'}`,
+          _captcha: 'false',
+          _template: 'table'
+        };
 
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(payload.error || 'Failed to send message.');
+        if (isFormSubmitEndpoint(SEMORE_CONTACT_ENDPOINT)) {
+          await sendToFormSubmit(SEMORE_CONTACT_ENDPOINT, formSubmitPayload);
+        } else {
+          try {
+            await sendToApi(SEMORE_CONTACT_ENDPOINT, apiPayload);
+          } catch (apiError) {
+            const shouldFallback = !SEMORE_CONFIGURED_CONTACT_ENDPOINT
+              && (apiError instanceof TypeError || apiError.status === 404 || apiError.status === 405);
+            if (!shouldFallback) {
+              throw apiError;
+            }
+            await sendToFormSubmit(SEMORE_FORMSUBMIT_ENDPOINT, formSubmitPayload);
+          }
         }
 
         contactForm.querySelectorAll('.form-group').forEach(g => g.style.display = 'none');
@@ -762,11 +801,24 @@ document.addEventListener('DOMContentLoaded', () => {
           formStartedAtField.value = String(Date.now());
         }
       } catch (error) {
+        const isActivationIssue = /activation/i.test(error.message || '');
+        const shouldOpenMailClient = isActivationIssue
+          || error instanceof TypeError
+          || [404, 405, 500, 502, 503, 504].includes(Number(error.status || 0));
+
+        if (shouldOpenMailClient) {
+          window.location.href = buildMailtoHref({ name, email, company, messageText });
+        }
+
         if (formStatus) {
-          const message = error instanceof TypeError
+          const statusMessage = isActivationIssue
+            ? `Form delivery needs one-time activation in ${SEMORE_FALLBACK_EMAIL} inbox.`
+            : shouldOpenMailClient
+            ? `We opened your email app so you can send directly to ${SEMORE_FALLBACK_EMAIL}.`
+            : error instanceof TypeError
             ? 'Could not reach the contact service. Please try again in a moment.'
             : (error.message || 'Failed to send message.');
-          formStatus.textContent = message;
+          formStatus.textContent = statusMessage;
           formStatus.classList.add('error');
         }
         if (formStartedAtField) {

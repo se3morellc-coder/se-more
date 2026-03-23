@@ -4,7 +4,6 @@ const allowedOrigins = ['https://semore.tech', 'https://www.semore.tech', 'https
 const minimumFormFillMs = 2500;
 const rateLimitWindowMs = 10 * 60 * 1000;
 const maxRequestsPerWindow = 5;
-const minimumRecaptchaScore = 0.5;
 const rateLimitStore = new Map();
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -163,72 +162,6 @@ function createTransporter({ localMode = false } = {}) {
   }
 }
 
-async function verifyRecaptchaToken(token, remoteIp, { optional = false } = {}) {
-  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-
-  if (!secretKey) {
-    if (optional) {
-      return { skipped: true, reason: 'missing-secret' };
-    }
-
-    const error = new Error('reCAPTCHA is not configured. Set RECAPTCHA_SECRET_KEY in Vercel.');
-    error.status = 500;
-    throw error;
-  }
-
-  if (!token) {
-    if (optional) {
-      return { skipped: true, reason: 'missing-token' };
-    }
-
-    const error = new Error('Please complete reCAPTCHA before sending your message.');
-    error.status = 400;
-    throw error;
-  }
-
-  const payload = new URLSearchParams({
-    secret: secretKey,
-    response: token
-  });
-
-  if (remoteIp) {
-    payload.set('remoteip', remoteIp);
-  }
-
-  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: payload
-  });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.success) {
-    const error = new Error('reCAPTCHA verification failed. Please try again.');
-    error.status = 400;
-    error.details = data['error-codes'] || null;
-    throw error;
-  }
-
-  if (data.action && data.action !== 'contact_form') {
-    const error = new Error('reCAPTCHA verification failed. Please try again.');
-    error.status = 400;
-    throw error;
-  }
-
-  if (typeof data.score === 'number' && data.score < minimumRecaptchaScore) {
-    const error = new Error('Spam protection flagged this request. Please try again later.');
-    error.status = 400;
-    throw error;
-  }
-
-  return {
-    skipped: false,
-    score: typeof data.score === 'number' ? data.score : null
-  };
-}
-
 async function handler(req, res) {
   applyCors(req, res);
 
@@ -249,7 +182,6 @@ async function handler(req, res) {
   const message = String(req.body?.message || '').trim();
   const website = String(req.body?.website || '').trim();
   const formStartedAt = Number(req.body?.formStartedAt || 0);
-  const recaptchaToken = String(req.body?.recaptchaToken || '').trim();
   const remoteIp = extractClientIp(req.headers['x-forwarded-for']);
 
   if (website) {
@@ -282,7 +214,6 @@ async function handler(req, res) {
 
   try {
     assertRateLimit(remoteIp);
-    await verifyRecaptchaToken(recaptchaToken, remoteIp, { optional: localMode });
     const { transporter, senderEmail } = createTransporter({ localMode });
     const result = await transporter.sendMail({
       from: `"SE:MORE Contact" <${senderEmail}>`,
