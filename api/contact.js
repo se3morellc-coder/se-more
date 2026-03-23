@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 
 const allowedOrigins = ['https://semore.tech', 'https://www.semore.tech', 'https://se-more.github.io'];
 const minimumFormFillMs = 2500;
-const rateLimitWindowMs = 60 * 60 * 1000;
+const rateLimitWindowMs = 10 * 60 * 1000;
 const maxRequestsPerWindow = 5;
 const minimumRecaptchaScore = 0.5;
 const rateLimitStore = new Map();
@@ -171,8 +171,8 @@ async function handler(req, res) {
   ].join('\n');
 
   try {
-    assertRateLimit(remoteIp);
     await verifyRecaptchaToken(recaptchaToken, remoteIp);
+    assertRateLimit(remoteIp);
     const transporter = createTransporter();
     const result = await transporter.sendMail({
       from: `"SE:MORE Contact" <${emailUser}>`,
