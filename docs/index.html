@@ -495,7 +495,7 @@
         <div class="contact-info">
           <span class="section-tag">Get In Touch</span>
           <h2 class="section-title">Ready to <span class="gradient-text">See More?</span></h2>
-          <p>Book a free consultation and discover how technology can unlock hidden value in your business.</p>
+          <p>Send a direct message and we will get back to you. No routing flow, no extra steps, just a simple contact form.</p>
           <div class="contact-details">
             <div class="contact-item">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -520,66 +520,11 @@
             Leave us a Google Review
           </a>
         </div>
-        <form class="contact-form booking-funnel" id="contactForm">
-          <div class="booking-funnel-head">
-            <span class="section-tag">Smart Booking Funnel</span>
-            <h3>Choose the path that fits your bottleneck</h3>
-            <p>We route the conversation differently depending on whether you need automation, AI, modernization, or strategic guidance.</p>
-          </div>
-          <div class="booking-path-grid" id="bookingPathGrid">
-            <button class="booking-path active" type="button" data-path="automation" aria-pressed="true">
-              <span class="booking-path-topline">
-                <span class="booking-path-kicker">Automation</span>
-                <span class="booking-path-icon" aria-hidden="true">01</span>
-              </span>
-              <strong>Eliminate repetitive work</strong>
-              <small>For manual workflows, reporting, and handoff friction.</small>
-              <span class="booking-path-footer">
-                <span class="booking-path-chip">Ops Lift</span>
-                <span class="booking-path-arrow" aria-hidden="true">↗</span>
-              </span>
-            </button>
-            <button class="booking-path" type="button" data-path="ai" aria-pressed="false">
-              <span class="booking-path-topline">
-                <span class="booking-path-kicker">AI Integration</span>
-                <span class="booking-path-icon" aria-hidden="true">02</span>
-              </span>
-              <strong>Add intelligence to existing systems</strong>
-              <small>For support load, document workflows, and internal search.</small>
-              <span class="booking-path-footer">
-                <span class="booking-path-chip">AI Layer</span>
-                <span class="booking-path-arrow" aria-hidden="true">↗</span>
-              </span>
-            </button>
-            <button class="booking-path" type="button" data-path="modernization" aria-pressed="false">
-              <span class="booking-path-topline">
-                <span class="booking-path-kicker">Modernization</span>
-                <span class="booking-path-icon" aria-hidden="true">03</span>
-              </span>
-              <strong>Upgrade without ripping out</strong>
-              <small>For legacy tools, spreadsheets, and brittle systems.</small>
-              <span class="booking-path-footer">
-                <span class="booking-path-chip">System Reset</span>
-                <span class="booking-path-arrow" aria-hidden="true">↗</span>
-              </span>
-            </button>
-            <button class="booking-path" type="button" data-path="strategy" aria-pressed="false">
-              <span class="booking-path-topline">
-                <span class="booking-path-kicker">Strategy</span>
-                <span class="booking-path-icon" aria-hidden="true">04</span>
-              </span>
-              <strong>Get a roadmap before spending</strong>
-              <small>For audits, architecture, vendor choices, and sequencing.</small>
-              <span class="booking-path-footer">
-                <span class="booking-path-chip">Clarity First</span>
-                <span class="booking-path-arrow" aria-hidden="true">↗</span>
-              </span>
-            </button>
-          </div>
-          <div class="booking-route-summary" id="bookingRouteSummary">
-            <div class="booking-route-label">Current route</div>
-            <h4 id="bookingRouteTitle">Automation Discovery Call</h4>
-            <p id="bookingRouteText">Best for businesses losing time to repetitive admin, manual reporting, disconnected approvals, or operational copy-paste work.</p>
+        <form class="contact-form simple-contact-form" id="contactForm">
+          <div class="contact-form-head">
+            <span class="section-tag">Direct Message</span>
+            <h3>Send us a note</h3>
+            <p>Tell us what you need help with and we will reply directly.</p>
           </div>
           <div class="form-group">
             <label for="name">Full Name</label>
@@ -594,34 +539,19 @@
             <input type="text" id="company" name="company" placeholder="Your Company">
           </div>
           <div class="form-group">
-            <label for="message">What’s the bottleneck?</label>
-            <textarea id="message" name="message" rows="4" placeholder="Tell us what is slowing the business down right now..." required></textarea>
+            <label for="message">How can we help?</label>
+            <textarea id="message" name="message" rows="5" placeholder="Tell us about your project, problem, or question..." required></textarea>
           </div>
-          <div class="form-group">
-            <label for="timeline">Desired Timeline</label>
-            <select id="timeline" name="timeline">
-              <option value="ASAP">As soon as possible</option>
-              <option value="30 days">Within 30 days</option>
-              <option value="This quarter">This quarter</option>
-              <option value="Exploring">Just exploring options</option>
-            </select>
-          </div>
-          <input type="hidden" id="servicePath" name="servicePath" value="automation">
           <button type="submit" class="btn btn-primary btn-lg btn-full">
-            <span>Book The Right Consultation</span>
+            <span>Send Message</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
-          <div class="booking-email-option">
-            <p>Prefer a regular email or just have a general question? Reach us directly at <a href="mailto:contact@semore.tech">contact@semore.tech</a>.</p>
-            <a href="mailto:contact@semore.tech" class="btn btn-ghost btn-full">
-              <span>Send a General Email</span>
-            </a>
-          </div>
+          <p class="form-status" id="formStatus" aria-live="polite"></p>
           <div class="form-success" id="formSuccess">
             <div class="success-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <p>Your consultation draft is ready. Send it and we’ll route it to the right SE:MORE conversation.</p>
+            <p>Your message was sent. We will reply directly to your email.</p>
           </div>
         </form>
       </div>

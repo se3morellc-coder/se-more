@@ -653,106 +653,67 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ── Contact Form — mailto ──────────────────
+  // ── Contact Form — API submit ──────────────
   const contactForm = document.getElementById('contactForm');
   const formSuccess = document.getElementById('formSuccess');
-  const bookingPathGrid = document.getElementById('bookingPathGrid');
-  const servicePathInput = document.getElementById('servicePath');
-  const bookingRouteTitle = document.getElementById('bookingRouteTitle');
-  const bookingRouteText = document.getElementById('bookingRouteText');
-  const timelineInput = document.getElementById('timeline');
-
-  const bookingRoutes = {
-    automation: {
-      title: 'Automation Discovery Call',
-      text: 'Best for businesses losing time to repetitive admin, manual reporting, disconnected approvals, or operational copy-paste work.',
-      subject: 'Automation Discovery Call',
-      intro: 'We want to streamline repetitive workflows and remove manual operational work.'
-    },
-    ai: {
-      title: 'AI Integration Strategy Call',
-      text: 'Best for teams that need AI copilots, support deflection, document understanding, internal search, or smarter recommendations.',
-      subject: 'AI Integration Strategy Call',
-      intro: 'We want to explore practical AI use cases inside our existing systems.'
-    },
-    modernization: {
-      title: 'System Modernization Call',
-      text: 'Best for businesses held back by legacy software, spreadsheets, outdated tooling, or disconnected internal systems.',
-      subject: 'System Modernization Call',
-      intro: 'We need to modernize legacy systems without disrupting the business.'
-    },
-    strategy: {
-      title: 'Technology Roadmap Call',
-      text: 'Best when you need an objective roadmap before committing to vendors, tools, architecture, or custom development.',
-      subject: 'Technology Roadmap Call',
-      intro: 'We need strategic guidance on where to invest in technology next.'
-    }
-  };
-
-  function applyBookingRoute(routeKey) {
-    const route = bookingRoutes[routeKey];
-    if (!route) {
-      return;
-    }
-
-    if (servicePathInput) {
-      servicePathInput.value = routeKey;
-    }
-    if (bookingRouteTitle) {
-      bookingRouteTitle.textContent = route.title;
-    }
-    if (bookingRouteText) {
-      bookingRouteText.textContent = route.text;
-    }
-  }
-
-  if (bookingPathGrid) {
-    bookingPathGrid.querySelectorAll('.booking-path').forEach(button => {
-      button.addEventListener('click', () => {
-        bookingPathGrid.querySelectorAll('.booking-path').forEach(path => {
-          path.classList.remove('active');
-          path.setAttribute('aria-pressed', 'false');
-        });
-        button.classList.add('active');
-        button.setAttribute('aria-pressed', 'true');
-        applyBookingRoute(button.dataset.path);
-      });
-    });
-  }
+  const formStatus = document.getElementById('formStatus');
 
   if (contactForm && formSuccess) {
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const name = contactForm.querySelector('#name')?.value || '';
       const email = contactForm.querySelector('#email')?.value || '';
       const company = contactForm.querySelector('#company')?.value || '';
       const message = contactForm.querySelector('#message')?.value || '';
-      const selectedRouteKey = servicePathInput?.value || 'automation';
-      const selectedRoute = bookingRoutes[selectedRouteKey] || bookingRoutes.automation;
-      const timeline = timelineInput?.value || 'Not specified';
-
-      const subject = encodeURIComponent(`${selectedRoute.subject} — ${name} — ${company || 'N/A'}`);
-      const body = encodeURIComponent(
-        `Consultation Type: ${selectedRoute.title}\nName: ${name}\nEmail: ${email}\nCompany: ${company || 'N/A'}\nDesired Timeline: ${timeline}\n\nWhy we are reaching out:\n${selectedRoute.intro}\n\nCurrent bottleneck:\n${message}\n\nNext step requested:\nPlease route us to the best SE:MORE consultation path for this need.`
-      );
-
-      window.open(`mailto:contact@semore.tech?subject=${subject}&body=${body}`, '_self');
 
       const btn = contactForm.querySelector('button[type="submit"]');
       if (!btn) {
         return;
       }
 
-      btn.innerHTML = '<span>Opening email...</span>';
+      const defaultButtonHtml = btn.innerHTML;
+
+      if (formStatus) {
+        formStatus.textContent = '';
+        formStatus.classList.remove('error', 'success');
+        formStatus.style.display = '';
+      }
+
+      btn.innerHTML = '<span>Sending...</span>';
       btn.disabled = true;
 
-      setTimeout(() => {
+      try {
+        const response = await fetch(`${SEMORE_API_BASE}/api/contact`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, email, company, message })
+        });
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(payload.error || 'Failed to send message.');
+        }
+
         contactForm.querySelectorAll('.form-group').forEach(g => g.style.display = 'none');
         btn.style.display = 'none';
+        if (formStatus) {
+          formStatus.style.display = 'none';
+        }
         formSuccess.classList.add('visible');
         contactForm.reset();
-      }, 1500);
+      } catch (error) {
+        if (formStatus) {
+          formStatus.textContent = error.message || 'Failed to send message.';
+          formStatus.classList.add('error');
+        }
+        btn.innerHTML = defaultButtonHtml;
+      } finally {
+        btn.disabled = false;
+      }
     });
   }
 
@@ -834,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       keywords: ['contact', 'email', 'book', 'consultation', 'get started'],
-      reply: 'The fastest way to get started is to book a consultation or email contact@semore.tech. If you tell me your biggest bottleneck, I can also suggest which SE:MORE service to lead with in that conversation.'
+      reply: 'The fastest way to get started is to send a message through the contact form or email contact@semore.tech. If you tell me what you need help with, I can also point you to the right SE:MORE service.'
     },
     {
       keywords: ['location', 'where', 'new jersey'],
@@ -944,7 +905,7 @@ INSTRUCTIONS FOR RESPONDING:
 - Keep responses to 2-3 sentences unless the user asks for detailed information
 - If asked about pricing, explain that SE:MORE offers custom quotes based on scope and always start with a free consultation
 - If asked about founders, share their LinkedIn URLs and expertise
-- If someone wants to get started, direct them to book a free consultation or email contact@semore.tech
+- If someone wants to get started, direct them to the contact form or email contact@semore.tech
 - For detailed service questions, reference specific use cases and tools from the service descriptions above
 - If the question is unrelated to SE:MORE or business technology, politely redirect`;
 
