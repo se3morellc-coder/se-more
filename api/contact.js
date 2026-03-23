@@ -25,7 +25,7 @@ function encodeMimeMessage(message) {
 
 function formatGmailError(status, errorText) {
   if (status === 401) {
-    return 'Email service authentication failed. Replace GMAIL_ACCESS_TOKEN in Vercel with a valid Gmail OAuth access token.';
+    return 'Email service authentication failed. Check the Google OAuth credentials in Vercel.';
   }
 
   if (status === 403) {
@@ -33,6 +33,49 @@ function formatGmailError(status, errorText) {
   }
 
   return errorText || 'Gmail API request failed.';
+}
+
+async function getGmailAccessToken() {
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+  if (refreshToken && clientId && clientSecret) {
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token'
+      })
+    });
+
+    const tokenPayload = await tokenResponse.json().catch(() => ({}));
+    if (!tokenResponse.ok || !tokenPayload.access_token) {
+      const details =
+        tokenPayload.error_description || tokenPayload.error || 'Failed to refresh Gmail access token.';
+      const error = new Error(details);
+      error.status = tokenResponse.status || 500;
+      throw error;
+    }
+
+    return tokenPayload.access_token;
+  }
+
+  const directAccessToken = process.env.GMAIL_ACCESS_TOKEN || process.env.GMAIL_API_KEY;
+  if (directAccessToken) {
+    return directAccessToken;
+  }
+
+  const error = new Error(
+    'Google email credentials are not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN in Vercel.'
+  );
+  error.status = 500;
+  throw error;
 }
 
 async function handler(req, res) {
@@ -46,12 +89,7 @@ async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const gmailAccessToken = process.env.GMAIL_ACCESS_TOKEN || process.env.GMAIL_API_KEY;
   const destinationEmail = process.env.CONTACT_TO_EMAIL || 'contact@semore.tech';
-
-  if (!gmailAccessToken) {
-    return res.status(500).json({ error: 'GMAIL_ACCESS_TOKEN is not configured.' });
-  }
 
   const name = sanitizeLine(req.body?.name);
   const email = sanitizeLine(req.body?.email);
@@ -89,6 +127,7 @@ async function handler(req, res) {
   ].join('\r\n');
 
   try {
+    const gmailAccessToken = await getGmailAccessToken();
     const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
       headers: {
@@ -110,7 +149,7 @@ async function handler(req, res) {
     return res.status(200).json({ ok: true, id: data.id });
   } catch (error) {
     console.error('Contact form send error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(error.status || 500).json({ error: error.message || 'Internal Server Error' });
   }
 }
 
