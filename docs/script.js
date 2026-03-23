@@ -117,14 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Hide loader immediately — both backgrounds are the same dark color,
+      // so the swap is seamless with no visible flash.
       if (loader) {
-        loader.classList.add('loaded');
+        loader.style.display = 'none';
       }
 
       if (!eyeOverlay) {
-        if (loader) {
-          loader.style.display = 'none';
-        }
         setPageReady();
         sessionStorage.setItem('semore-intro-played', '1');
         return;
@@ -148,14 +147,16 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         eyeOverlay.classList.add('expanding');
 
+        // Start page content reveal as the overlay fades out (CSS transition)
+        setTimeout(() => {
+          setPageReady();
+        }, 500);
+
+        // Clean up overlay after zoom + fade completes
         setTimeout(() => {
           eyeOverlay.classList.add('done');
-          if (loader) {
-            loader.style.display = 'none';
-          }
-          setPageReady();
           sessionStorage.setItem('semore-intro-played', '1');
-        }, 1100);
+        }, 1400);
       }, 1660);
     };
 

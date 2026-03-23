@@ -3333,6 +3333,10 @@ body.page-ready .cursor-ring { opacity: 1; }
   gap: 48px;
   position: relative;
   z-index: 2;
+  opacity: 0;
+}
+
+.eye-zoom-overlay.active .eye-zoom-pair {
   animation: eyePairEntrance 0.6s 0.1s cubic-bezier(0.22,1,0.36,1) both;
 }
 
@@ -3427,7 +3431,13 @@ body.page-ready .cursor-ring { opacity: 1; }
 
 /* Phase 5: Smooth cinematic zoom through the pupils */
 .eye-zoom-overlay.expanding .eye-zoom-pair {
-  animation: eyePairZoom 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: eyePairZoom 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Fade out the dark overlay background so content shows through */
+.eye-zoom-overlay.expanding {
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 1, 1) 0.5s;
+  opacity: 0;
 }
 
 @keyframes eyePairZoom {
@@ -3435,12 +3445,14 @@ body.page-ready .cursor-ring { opacity: 1; }
   8%   { transform: scale(1.15); opacity: 1; filter: blur(0); }
   25%  { transform: scale(3);   opacity: 1; filter: blur(0); }
   50%  { transform: scale(10);  opacity: 1; filter: blur(0.5px); }
-  75%  { transform: scale(28);  opacity: 0.7; filter: blur(2px); }
+  75%  { transform: scale(28);  opacity: 0.6; filter: blur(2px); }
   100% { transform: scale(55);  opacity: 0; filter: blur(4px); }
 }
 
 .eye-zoom-overlay.done {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* ============================================
