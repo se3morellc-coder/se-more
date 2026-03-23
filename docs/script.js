@@ -18,6 +18,8 @@ const SEMORE_API_BASE = (() => {
   return '';
 })();
 
+const SEMORE_IS_LOCALHOST = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
 document.addEventListener('DOMContentLoaded', () => {
   const escapeHtml = (text) => text
     .replace(/&/g, '&amp;')
@@ -28,10 +30,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const getRecaptchaToken = async (siteKey) => {
     if (!siteKey) {
+      if (SEMORE_IS_LOCALHOST) {
+        return '';
+      }
+
       throw new Error('reCAPTCHA site key is missing.');
     }
 
     if (typeof window.grecaptcha === 'undefined') {
+      if (SEMORE_IS_LOCALHOST) {
+        return '';
+      }
+
       throw new Error('Spam protection is still loading. Please wait a second and try again.');
     }
 
@@ -40,7 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.grecaptcha
           .execute(siteKey, { action: 'contact_form' })
           .then(resolve)
-          .catch(() => reject(new Error('Spam protection could not be verified. Please try again.')));
+          .catch(() => {
+            if (SEMORE_IS_LOCALHOST) {
+              resolve('');
+              return;
+            }
+
+            reject(new Error('Spam protection could not be verified. Please try again.'));
+          });
       });
     });
   };
@@ -746,7 +763,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (error) {
         if (formStatus) {
-          formStatus.textContent = error.message || 'Failed to send message.';
+          const message = error instanceof TypeError
+            ? 'Could not reach the contact service. Please try again in a moment.'
+            : (error.message || 'Failed to send message.');
+          formStatus.textContent = message;
           formStatus.classList.add('error');
         }
         if (formStartedAtField) {

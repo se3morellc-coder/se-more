@@ -9,9 +9,56 @@ const rateLimitStore = new Map();
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function normalizeHostname(value = '') {
+  return String(value).trim().replace(/^\[|\]$/g, '').toLowerCase();
+}
+
+function isLocalHostname(value = '') {
+  const hostname = normalizeHostname(value);
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+}
+
+function getOriginHostname(origin) {
+  if (!origin) {
+    return '';
+  }
+
+  try {
+    return normalizeHostname(new URL(origin).hostname);
+  } catch {
+    return '';
+  }
+}
+
+function getRequestHostname(req) {
+  const forwardedHost = typeof req.headers['x-forwarded-host'] === 'string'
+    ? req.headers['x-forwarded-host'].split(',')[0].trim()
+    : '';
+  const host = forwardedHost || req.headers.host || '';
+  return normalizeHostname(host.split(':')[0]);
+}
+
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return false;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  return isLocalHostname(getOriginHostname(origin));
+}
+
+function isLocalRequest(req) {
+  // Treat a request as local only when the server host itself is local.
+  // Do not trust Origin for this decision because it can be spoofed by non-browser clients.
+  return isLocalHostname(getRequestHostname(req));
+}
+
 function applyCors(req, res) {
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  if (isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -45,37 +92,95 @@ function assertRateLimit(ipAddress) {
   rateLimitStore.set(ipAddress, recent);
 }
 
-function createTransporter() {
+function createTransporter({ localMode = false } = {}) {
+  const smtpUrl = process.env.SMTP_URL;
+  const smtpHost = process.env.EMAIL_HOST;
+  const smtpPort = Number(process.env.EMAIL_PORT || 587);
+  const smtpUser = process.env.EMAIL_USER;
+  const smtpPass = process.env.EMAIL_PASS;
+  const senderEmail = sanitizeLine(process.env.CONTACT_FROM_EMAIL || smtpUser || 'no-reply@semore.tech');
+
+  if (smtpUrl) {
+    return {
+      transporter: nodemailer.createTransport(smtpUrl),
+      senderEmail
+    };
+  }
+
+  if (smtpHost) {
+    const transportConfig = {
+      host: smtpHost,
+      port: Number.isFinite(smtpPort) ? smtpPort : 587,
+      secure: String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true'
+    };
+
+    if (smtpUser && smtpPass) {
+      transportConfig.auth = {
+        user: smtpUser,
+        pass: smtpPass
+      };
+    }
+
+    return {
+      transporter: nodemailer.createTransport(transportConfig),
+      senderEmail
+    };
+  }
+
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
 
+  if (emailUser && emailPass) {
+    return {
+      transporter: nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: emailUser,
+          pass: emailPass
+        }
+      }),
+      senderEmail
+    };
+  }
+
+  if (localMode) {
+    return {
+      transporter: nodemailer.createTransport({
+        streamTransport: true,
+        buffer: true,
+        newline: 'unix'
+      }),
+      senderEmail: 'no-reply@localhost'
+    };
+  }
+
   if (!emailUser || !emailPass) {
     const error = new Error(
-      'Email credentials are not configured. Set EMAIL_USER and EMAIL_PASS in Vercel.'
+      'Email delivery is not configured. Set SMTP_URL or EMAIL_USER and EMAIL_PASS.'
     );
     error.status = 500;
     throw error;
   }
-
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: emailUser,
-      pass: emailPass
-    }
-  });
 }
 
-async function verifyRecaptchaToken(token, remoteIp) {
+async function verifyRecaptchaToken(token, remoteIp, { optional = false } = {}) {
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
   if (!secretKey) {
+    if (optional) {
+      return { skipped: true, reason: 'missing-secret' };
+    }
+
     const error = new Error('reCAPTCHA is not configured. Set RECAPTCHA_SECRET_KEY in Vercel.');
     error.status = 500;
     throw error;
   }
 
   if (!token) {
+    if (optional) {
+      return { skipped: true, reason: 'missing-token' };
+    }
+
     const error = new Error('Please complete reCAPTCHA before sending your message.');
     error.status = 400;
     throw error;
@@ -117,6 +222,11 @@ async function verifyRecaptchaToken(token, remoteIp) {
     error.status = 400;
     throw error;
   }
+
+  return {
+    skipped: false,
+    score: typeof data.score === 'number' ? data.score : null
+  };
 }
 
 async function handler(req, res) {
@@ -131,7 +241,7 @@ async function handler(req, res) {
   }
 
   const destinationEmail = process.env.CONTACT_TO_EMAIL || 'contact@semore.tech';
-  const emailUser = process.env.EMAIL_USER;
+  const localMode = isLocalRequest(req);
 
   const name = sanitizeLine(req.body?.name);
   const email = sanitizeLine(req.body?.email);
@@ -171,18 +281,22 @@ async function handler(req, res) {
   ].join('\n');
 
   try {
-    await verifyRecaptchaToken(recaptchaToken, remoteIp);
     assertRateLimit(remoteIp);
-    const transporter = createTransporter();
+    await verifyRecaptchaToken(recaptchaToken, remoteIp, { optional: localMode });
+    const { transporter, senderEmail } = createTransporter({ localMode });
     const result = await transporter.sendMail({
-      from: `"SE:MORE Contact" <${emailUser}>`,
+      from: `"SE:MORE Contact" <${senderEmail}>`,
       to: destinationEmail,
       replyTo: email,
       subject,
       text: plainText
     });
 
-    return res.status(200).json({ ok: true, id: result.messageId });
+    if (localMode && result.message) {
+      console.info('Local contact form preview generated.');
+    }
+
+    return res.status(200).json({ ok: true, id: result.messageId || `local-${Date.now()}` });
   } catch (error) {
     console.error('Contact form send error:', error);
     const authError =
