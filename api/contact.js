@@ -38,6 +38,47 @@ function createTransporter() {
   });
 }
 
+async function verifyRecaptchaToken(token, remoteIp) {
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+
+  if (!secretKey) {
+    const error = new Error('reCAPTCHA is not configured. Set RECAPTCHA_SECRET_KEY in Vercel.');
+    error.status = 500;
+    throw error;
+  }
+
+  if (!token) {
+    const error = new Error('Please complete reCAPTCHA before sending your message.');
+    error.status = 400;
+    throw error;
+  }
+
+  const payload = new URLSearchParams({
+    secret: secretKey,
+    response: token
+  });
+
+  if (remoteIp) {
+    payload.set('remoteip', remoteIp);
+  }
+
+  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: payload
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.success) {
+    const error = new Error('reCAPTCHA verification failed. Please try again.');
+    error.status = 400;
+    error.details = data['error-codes'] || null;
+    throw error;
+  }
+}
+
 async function handler(req, res) {
   applyCors(req, res);
 
@@ -56,6 +97,10 @@ async function handler(req, res) {
   const email = sanitizeLine(req.body?.email);
   const company = sanitizeLine(req.body?.company);
   const message = String(req.body?.message || '').trim();
+  const recaptchaToken = String(req.body?.recaptchaToken || '').trim();
+  const forwardedFor = req.headers['x-forwarded-for'];
+  const remoteIp =
+    typeof forwardedFor === 'string' ? forwardedFor.split(',')[0].trim() : undefined;
 
   if (!name || !email || !message) {
     return res.status(400).json({ error: 'Name, email, and message are required.' });
@@ -78,6 +123,7 @@ async function handler(req, res) {
   ].join('\n');
 
   try {
+    await verifyRecaptchaToken(recaptchaToken, remoteIp);
     const transporter = createTransporter();
     const result = await transporter.sendMail({
       from: `"SE:MORE Contact" <${emailUser}>`,

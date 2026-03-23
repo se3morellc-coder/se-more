@@ -666,6 +666,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = contactForm.querySelector('#email')?.value || '';
       const company = contactForm.querySelector('#company')?.value || '';
       const message = contactForm.querySelector('#message')?.value || '';
+      const recaptchaToken =
+        typeof window.grecaptcha !== 'undefined' ? window.grecaptcha.getResponse() : '';
 
       const btn = contactForm.querySelector('button[type="submit"]');
       if (!btn) {
@@ -680,6 +682,14 @@ document.addEventListener('DOMContentLoaded', () => {
         formStatus.style.display = '';
       }
 
+      if (!recaptchaToken) {
+        if (formStatus) {
+          formStatus.textContent = 'Please complete reCAPTCHA before sending your message.';
+          formStatus.classList.add('error');
+        }
+        return;
+      }
+
       btn.innerHTML = '<span>Sending...</span>';
       btn.disabled = true;
 
@@ -689,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ name, email, company, message })
+          body: JSON.stringify({ name, email, company, message, recaptchaToken })
         });
 
         const payload = await response.json().catch(() => ({}));
@@ -705,10 +715,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         formSuccess.classList.add('visible');
         contactForm.reset();
+        if (typeof window.grecaptcha !== 'undefined') {
+          window.grecaptcha.reset();
+        }
       } catch (error) {
         if (formStatus) {
           formStatus.textContent = error.message || 'Failed to send message.';
           formStatus.classList.add('error');
+        }
+        if (typeof window.grecaptcha !== 'undefined') {
+          window.grecaptcha.reset();
         }
         btn.innerHTML = defaultButtonHtml;
       } finally {
