@@ -3,13 +3,16 @@
    Gulf Blue + British Racing Green Edition
    ============================================ */
 
-// Resolve the API base URL — uses a configured override, or the current origin.
+// Resolve the API base URL — Vercel backend for production, current origin for local dev.
 const SEMORE_API_BASE = (() => {
   const configuredBase = window.SEMORE_CONFIG?.apiBase || window.SEMORE_CONFIG?.API_BASE || '';
   if (configuredBase) {
     return configuredBase.replace(/\/$/, '');
   }
-  return window.location.origin;
+  if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    return window.location.origin;
+  }
+  return 'https://se-more-cuql-se3morellc-2675s-projects.vercel.app';
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
