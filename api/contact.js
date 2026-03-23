@@ -23,6 +23,18 @@ function encodeMimeMessage(message) {
     .replace(/=+$/g, '');
 }
 
+function formatGmailError(status, errorText) {
+  if (status === 401) {
+    return 'Email service authentication failed. Replace GMAIL_ACCESS_TOKEN in Vercel with a valid Gmail OAuth access token.';
+  }
+
+  if (status === 403) {
+    return 'Email service permission denied. The Gmail token likely does not have Gmail send access.';
+  }
+
+  return errorText || 'Gmail API request failed.';
+}
+
 async function handler(req, res) {
   applyCors(req, res);
 
@@ -88,7 +100,10 @@ async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      return res.status(response.status).json({ error: errorText || 'Gmail API request failed.' });
+      return res.status(response.status).json({
+        error: formatGmailError(response.status, errorText),
+        details: errorText || null
+      });
     }
 
     const data = await response.json();
