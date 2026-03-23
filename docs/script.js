@@ -29,50 +29,167 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Page Loader + Eye Zoom Intro ─────────
   const loader = document.getElementById('pageLoader');
   const eyeOverlay = document.getElementById('eyeZoomOverlay');
+  const loaderProgressBar = document.querySelector('.loader-progress');
+  const loaderProgressValue = document.getElementById('loaderProgressValue');
+  const loaderStatusLabel = document.getElementById('loaderStatusLabel');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Skip intro if already played this session (e.g. returning from subpages)
   const introPlayed = sessionStorage.getItem('semore-intro-played');
   const isSubpage = !eyeOverlay || eyeOverlay.style.display === 'none';
+  const loaderMilestones = [
+    { threshold: 0, label: 'Scanning operations' },
+    { threshold: 24, label: 'Mapping friction points' },
+    { threshold: 50, label: 'Finding automation angles' },
+    { threshold: 76, label: 'Preparing the view' },
+    { threshold: 96, label: 'Opening the full picture' }
+  ];
 
-  if (introPlayed || isSubpage) {
-    if (loader) loader.style.display = 'none';
-    if (eyeOverlay) eyeOverlay.style.display = 'none';
+  let visualLoaderProgress = 0;
+  let targetLoaderProgress = 0;
+  let loaderAnimationFrame = 0;
+  let stagedProgressTimer = 0;
+  let introSequenceStarted = false;
+
+  const setPageReady = () => {
     document.body.classList.add('page-ready');
-  } else {
-    window.addEventListener('load', () => {
-      setTimeout(() => {
+  };
+
+  const finishIntroImmediately = () => {
+    if (loader) {
+      loader.style.display = 'none';
+    }
+    if (eyeOverlay) {
+      eyeOverlay.style.display = 'none';
+    }
+    setPageReady();
+  };
+
+  const updateLoaderVisuals = (value) => {
+    const progress = Math.max(0, Math.min(100, value));
+    const roundedProgress = Math.round(progress);
+    const loaderPhase = [...loaderMilestones].reverse().find(step => roundedProgress >= step.threshold);
+
+    if (loaderProgressBar) {
+      loaderProgressBar.style.transform = `scaleX(${progress / 100})`;
+    }
+    if (loaderProgressValue) {
+      loaderProgressValue.textContent = `${roundedProgress}%`;
+    }
+    if (loaderStatusLabel && loaderPhase) {
+      loaderStatusLabel.textContent = loaderPhase.label;
+    }
+  };
+
+  const animateLoaderProgress = () => {
+    const difference = targetLoaderProgress - visualLoaderProgress;
+    if (difference <= 0) {
+      loaderAnimationFrame = 0;
+      updateLoaderVisuals(visualLoaderProgress);
+      return;
+    }
+
+    visualLoaderProgress += Math.max(difference * 0.14, 0.6);
+    if (visualLoaderProgress >= targetLoaderProgress - 0.25) {
+      visualLoaderProgress = targetLoaderProgress;
+    }
+
+    updateLoaderVisuals(visualLoaderProgress);
+    loaderAnimationFrame = window.requestAnimationFrame(animateLoaderProgress);
+  };
+
+  const setLoaderTarget = (value) => {
+    targetLoaderProgress = Math.max(targetLoaderProgress, Math.min(100, value));
+    if (!loaderAnimationFrame) {
+      loaderAnimationFrame = window.requestAnimationFrame(animateLoaderProgress);
+    }
+  };
+
+  const runEyeIntro = () => {
+    if (introSequenceStarted) {
+      return;
+    }
+
+    introSequenceStarted = true;
+    window.clearInterval(stagedProgressTimer);
+    setLoaderTarget(100);
+
+    const startSequence = () => {
+      if (visualLoaderProgress < 99.5) {
+        window.requestAnimationFrame(startSequence);
+        return;
+      }
+
+      if (loader) {
         loader.classList.add('loaded');
-        eyeOverlay.classList.add('active');
+      }
 
-        // Phase 1: Eyes appear (entrance animation in CSS)
-        // Phase 2: Pupils "look around" tracking cursor
+      if (!eyeOverlay) {
+        if (loader) {
+          loader.style.display = 'none';
+        }
+        setPageReady();
+        sessionStorage.setItem('semore-intro-played', '1');
+        return;
+      }
+
+      eyeOverlay.classList.add('active');
+
+      setTimeout(() => {
+        eyeOverlay.classList.add('looking');
+      }, 360);
+
+      setTimeout(() => {
+        eyeOverlay.classList.add('blink');
+      }, 1120);
+
+      setTimeout(() => {
+        eyeOverlay.classList.remove('blink');
+        eyeOverlay.classList.add('dilate');
+      }, 1350);
+
+      setTimeout(() => {
+        eyeOverlay.classList.add('expanding');
+
         setTimeout(() => {
-          eyeOverlay.classList.add('looking');
-        }, 600);
-
-        // Phase 3: Natural blink
-        setTimeout(() => {
-          eyeOverlay.classList.add('blink');
-        }, 1400);
-
-        // Phase 4: Blink ends, pupils dilate, then cinematic zoom
-        setTimeout(() => {
-          eyeOverlay.classList.remove('blink');
-          eyeOverlay.classList.add('dilate');
-        }, 1600);
-
-        setTimeout(() => {
-          eyeOverlay.classList.add('expanding');
-
-          setTimeout(() => {
-            eyeOverlay.classList.add('done');
+          eyeOverlay.classList.add('done');
+          if (loader) {
             loader.style.display = 'none';
-            document.body.classList.add('page-ready');
-            sessionStorage.setItem('semore-intro-played', '1');
-          }, 1200);
-        }, 1900);
-      }, 300);
-    });
+          }
+          setPageReady();
+          sessionStorage.setItem('semore-intro-played', '1');
+        }, 1100);
+      }, 1660);
+    };
+
+    window.setTimeout(startSequence, 160);
+  };
+
+  if (prefersReducedMotion || introPlayed || isSubpage) {
+    finishIntroImmediately();
+  } else {
+    updateLoaderVisuals(0);
+
+    const stagedTargets = [12, 27, 41, 56, 70, 82, 91];
+    let stagedIndex = 0;
+
+    stagedProgressTimer = window.setInterval(() => {
+      if (stagedIndex >= stagedTargets.length) {
+        window.clearInterval(stagedProgressTimer);
+        return;
+      }
+
+      setLoaderTarget(stagedTargets[stagedIndex]);
+      stagedIndex += 1;
+    }, 180);
+
+    if (document.readyState === 'complete') {
+      window.setTimeout(runEyeIntro, 220);
+    } else {
+      window.addEventListener('load', () => {
+        window.setTimeout(runEyeIntro, 180);
+      }, { once: true });
+    }
   }
 
   // ── Theme Toggle ──────────────────────────
