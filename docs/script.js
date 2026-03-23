@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 50);
-  });
+  }, { passive: true });
 
   // ── Mobile Menu ───────────────────────────
   const hamburger = document.getElementById('hamburger');
@@ -297,52 +297,49 @@ document.addEventListener('DOMContentLoaded', () => {
     return state;
   };
 
-  function trackEyes() {
-    const pupils = document.querySelectorAll('.logo-colon .eye .pupil');
-    pupils.forEach(pupil => {
+  // Cache eye elements and their rects — refresh only on scroll/resize
+  let eyePupilData = [];
+  let eyeIrisData = [];
+
+  function refreshEyeRects() {
+    eyePupilData = Array.from(document.querySelectorAll('.logo-colon .eye .pupil')).map(pupil => {
       const eye = pupil.parentElement;
       const rect = eye.getBoundingClientRect();
-      const eyeCenterX = rect.left + rect.width / 2;
-      const eyeCenterY = rect.top + rect.height / 2;
-
-      const dx = cursorX - eyeCenterX;
-      const dy = cursorY - eyeCenterY;
-      const angle = Math.atan2(dy, dx);
-      const dist = Math.min(Math.hypot(dx, dy), rect.width * 3);
-
-      const maxTravel = rect.width * 0.3;
-      const travel = (dist / (rect.width * 3)) * maxTravel;
-
-      const px = Math.cos(angle) * travel;
-      const py = Math.sin(angle) * travel;
-      const smooth = smoothEyeTarget(pupil, px, py, 0.18);
-
-      pupil.style.transform = `translate3d(calc(-50% + ${smooth.x}px), calc(-50% + ${smooth.y}px), 0)`;
+      return { el: pupil, cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2, r: rect.width };
     });
-
-    const irises = document.querySelectorAll('.scanner-eye .iris');
-    irises.forEach(iris => {
+    eyeIrisData = Array.from(document.querySelectorAll('.scanner-eye .iris')).map(iris => {
       const eye = iris.parentElement;
       const rect = eye.getBoundingClientRect();
-      const eyeCenterX = rect.left + rect.width / 2;
-      const eyeCenterY = rect.top + rect.height / 2;
+      return { el: iris, cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2 };
+    });
+  }
+  refreshEyeRects();
+  window.addEventListener('scroll', refreshEyeRects, { passive: true });
+  window.addEventListener('resize', refreshEyeRects, { passive: true });
 
-      const dx = cursorX - eyeCenterX;
-      const dy = cursorY - eyeCenterY;
+  let eyeRafId = 0;
+  function trackEyes() {
+    for (let i = 0; i < eyePupilData.length; i++) {
+      const { el, cx, cy, r } = eyePupilData[i];
+      const dx = cursorX - cx;
+      const dy = cursorY - cy;
+      const angle = Math.atan2(dy, dx);
+      const dist = Math.min(Math.hypot(dx, dy), r * 3);
+      const travel = (dist / (r * 3)) * (r * 0.3);
+      const smooth = smoothEyeTarget(el, Math.cos(angle) * travel, Math.sin(angle) * travel, 0.18);
+      el.style.transform = `translate3d(calc(-50% + ${smooth.x}px),calc(-50% + ${smooth.y}px),0)`;
+    }
+    for (let i = 0; i < eyeIrisData.length; i++) {
+      const { el, cx, cy } = eyeIrisData[i];
+      const dx = cursorX - cx;
+      const dy = cursorY - cy;
       const angle = Math.atan2(dy, dx);
       const dist = Math.min(Math.hypot(dx, dy), 400);
-
-      const maxTravel = 10;
-      const travel = (dist / 400) * maxTravel;
-
-      const px = Math.cos(angle) * travel;
-      const py = Math.sin(angle) * travel;
-      const smooth = smoothEyeTarget(iris, px, py, 0.12);
-
-      iris.style.transform = `translate3d(${smooth.x}px, ${smooth.y}px, 0)`;
-    });
-
-    requestAnimationFrame(trackEyes);
+      const travel = (dist / 400) * 10;
+      const smooth = smoothEyeTarget(el, Math.cos(angle) * travel, Math.sin(angle) * travel, 0.12);
+      el.style.transform = `translate3d(${smooth.x}px,${smooth.y}px,0)`;
+    }
+    eyeRafId = requestAnimationFrame(trackEyes);
   }
 
   trackEyes();
@@ -352,16 +349,19 @@ document.addEventListener('DOMContentLoaded', () => {
   if (canvas) {
     const ctx = canvas.getContext('2d');
     let particles = [];
-    const PARTICLE_COUNT = 60;
+    const PARTICLE_COUNT = 50;
+    let heroRect = { left: 0, top: 0 };
 
     function resizeCanvas() {
       const hero = canvas.parentElement;
       canvas.width = hero.offsetWidth;
       canvas.height = hero.offsetHeight;
+      heroRect = canvas.getBoundingClientRect();
     }
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas, { passive: true });
+    window.addEventListener('scroll', () => { heroRect = canvas.getBoundingClientRect(); }, { passive: true });
 
     class Particle {
       constructor() {
@@ -381,8 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.x += this.speedX;
         this.y += this.speedY;
 
-        // Subtle attraction to cursor
-        const heroRect = canvas.getBoundingClientRect();
+        // Subtle attraction to cursor (heroRect cached outside the loop)
         const localCursorX = cursorX - heroRect.left;
         const localCursorY = cursorY - heroRect.top;
         const dx = localCursorX - this.x;
@@ -396,48 +395,48 @@ document.addEventListener('DOMContentLoaded', () => {
         if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
         if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
       }
-      draw() {
-        const isDark = html.getAttribute('data-theme') === 'dark';
-        const lightness = isDark ? '65%' : '40%';
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${this.hue}, 80%, ${lightness}, ${this.opacity})`;
-        ctx.fill();
-      }
     }
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       particles.push(new Particle());
     }
 
-    function drawLines() {
+    function drawLines(isDark) {
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.hypot(dx, dy);
-          if (dist < 120) {
-            const isDark = html.getAttribute('data-theme') === 'dark';
-            const lineColor = isDark ? `rgba(125, 204, 248, ${0.06 * (1 - dist / 120)})` : `rgba(0, 77, 43, ${0.08 * (1 - dist / 120)})`;
+          if (dist < 110) {
+            const alpha = (1 - dist / 110) * (isDark ? 0.06 : 0.08);
+            ctx.strokeStyle = isDark
+              ? `rgba(125,204,248,${alpha})`
+              : `rgba(0,77,43,${alpha})`;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = lineColor;
-            ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
       }
     }
 
+    let particleRafId = 0;
     function animateParticles() {
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const lightness = isDark ? '65%' : '40%';
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineWidth = 0.5;
       particles.forEach(p => {
         p.update();
-        p.draw();
+        // draw inline so isDark/lightness aren't re-read per particle
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},80%,${lightness},${p.opacity})`;
+        ctx.fill();
       });
-      drawLines();
-      requestAnimationFrame(animateParticles);
+      drawLines(isDark);
+      particleRafId = requestAnimationFrame(animateParticles);
     }
 
     animateParticles();
@@ -730,18 +729,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Parallax Floating Shapes ──────────────
+  const floatingShapes = Array.from(document.querySelectorAll('.floating-shape'));
+  let shapesRafId = 0;
   function animateShapes() {
     const normX = (cursorX / window.innerWidth - 0.5) * 2;
     const normY = (cursorY / window.innerHeight - 0.5) * 2;
-
-    const shapes = document.querySelectorAll('.floating-shape');
-    shapes.forEach((shape, i) => {
+    for (let i = 0; i < floatingShapes.length; i++) {
       const speed = (i + 1) * 12;
-      const x = normX * speed;
-      const y = normY * speed;
-      shape.style.transform = `translate(${x}px, ${y}px)`;
-    });
-    requestAnimationFrame(animateShapes);
+      floatingShapes[i].style.transform = `translate(${normX * speed}px,${normY * speed}px)`;
+    }
+    shapesRafId = requestAnimationFrame(animateShapes);
   }
 
   animateShapes();
@@ -750,22 +747,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const sections = document.querySelectorAll('.section[id], .hero[id]');
   const navLinksAll = document.querySelectorAll('.nav-links a');
 
-  window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(section => {
-      const top = section.offsetTop - 100;
-      if (window.scrollY >= top) {
-        current = section.getAttribute('id');
-      }
-    });
+  // Cache section tops — refresh on resize only (they don't change on scroll)
+  let sectionTops = [];
+  function refreshSectionTops() {
+    sectionTops = Array.from(sections).map(s => ({
+      id: s.getAttribute('id'),
+      top: s.offsetTop - 100
+    }));
+  }
+  refreshSectionTops();
+  window.addEventListener('resize', refreshSectionTops, { passive: true });
 
+  let lastNavId = '';
+  window.addEventListener('scroll', () => {
+    const sy = window.scrollY;
+    let current = '';
+    for (let i = 0; i < sectionTops.length; i++) {
+      if (sy >= sectionTops[i].top) current = sectionTops[i].id;
+    }
+    if (current === lastNavId) return;
+    lastNavId = current;
     navLinksAll.forEach(link => {
-      link.style.color = '';
-      if (link.getAttribute('href') === '#' + current) {
-        link.style.color = 'var(--brg-glow)';
-      }
+      link.style.color = link.getAttribute('href') === '#' + current ? 'var(--brg-glow)' : '';
     });
-  });
+  }, { passive: true });
 
   // ── Groq AI Chat Widget ───────────────────
   // API calls are proxied through /api/chat when a backend is configured.
@@ -1253,7 +1258,7 @@ INSTRUCTIONS FOR RESPONDING:
 
   window.addEventListener('scroll', () => {
     backToTop.classList.toggle('visible', window.scrollY > 600);
-  });
+  }, { passive: true });
 
   backToTop.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1325,6 +1330,19 @@ INSTRUCTIONS FOR RESPONDING:
       clearInterval(scrambleTimer);
       el.textContent = original;
     });
+  });
+
+  // ── Pause/resume all RAF loops on tab visibility ──
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(eyeRafId);
+      cancelAnimationFrame(shapesRafId);
+      if (particleRafId) cancelAnimationFrame(particleRafId);
+    } else {
+      eyeRafId = requestAnimationFrame(trackEyes);
+      shapesRafId = requestAnimationFrame(animateShapes);
+      if (canvas) particleRafId = requestAnimationFrame(animateParticles);
+    }
   });
 
 });
